@@ -1,4 +1,4 @@
-package se.uu.it
+package uu.se.it.cinsight
 
 import org.junit.runner.RunWith
 import org.apache.spark.SharedSparkContext
