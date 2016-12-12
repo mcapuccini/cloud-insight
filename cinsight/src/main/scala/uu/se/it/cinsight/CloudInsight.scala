@@ -29,4 +29,13 @@ class CloudInsight
       return HashMap[String, Double]()
     }
 
+    /** Performs sc simulations with given parameter theta
+      *
+      * @param theta parameter set to use for these simulations
+      * @param sc number of simulations to perform
+      * @return simulated flow cytometry data according to theta
+      */
+    def run_simulation(theta: HashMap[String, Double], sc: Int) : Seq[Iterable[Double]] = {
+      return Seq[Iterable[Double]]()
+    }
 }
