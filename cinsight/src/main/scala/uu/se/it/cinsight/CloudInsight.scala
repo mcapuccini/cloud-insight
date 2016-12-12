@@ -20,5 +20,13 @@ class CloudInsight
         model: String,
         data: Seq[(Double, Iterable[Double])])
 {
+    /** Samples one candidate parameter point according to prior distribution
+      *     and previously accepted points.
+      *
+      * @return a new parameter point
+      */
+    def sample_candidate() : HashMap[String, Double] = {
+      return HashMap[String, Double]()
+    }
 
 }
