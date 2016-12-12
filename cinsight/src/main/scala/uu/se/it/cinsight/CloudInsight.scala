@@ -38,4 +38,14 @@ class CloudInsight
     def run_simulation(theta: HashMap[String, Double], sc: Int) : Seq[Iterable[Double]] = {
       return Seq[Iterable[Double]]()
     }
+
+    /** Measures Kolmogorov distance between two data sets
+      *
+      * @param x first dataset
+      * @param y second dataset
+      * @return the distance between the two datasets
+      */
+    def kolmogorov_distance(x: Seq[Iterable[Double]], y: Seq[Iterable[Double]]) : Double = {
+      return 0.toDouble
+    }
 }
