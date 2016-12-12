@@ -48,4 +48,12 @@ class CloudInsight
     def kolmogorov_distance(x: Seq[Iterable[Double]], y: Seq[Iterable[Double]]) : Double = {
       return 0.toDouble
     }
+
+    /** Run the INSIGHT algorithm
+      *
+      * @return sampled posterior distribution of the parameter space
+      */
+    def run() : Seq[Iterable[HashMap[String, Double]]] = {
+      return Seq[Iterable[HashMap[String, Double]]]()
+    }
 }
