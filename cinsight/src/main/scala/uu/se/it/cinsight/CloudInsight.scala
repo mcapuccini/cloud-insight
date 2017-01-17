@@ -49,7 +49,12 @@ class CloudInsight
       * @return the distance between the two datasets
       */
     def kolmogorov_distance(x: Seq[Iterable[Double]], y: Seq[Iterable[Double]]) : Double = {
-      return 0.toDouble
+      x.zip(y).map({case (a, b) =>
+                 (a.map((_, b.size)) ++ b.map((_, -a.size))) // Merge experimental and simulated datasets
+                 .groupBy(_._1).map({case (k, v) => (k, v.map(_._2).sum)}).toList // Aggregate duplicates
+                 .sortBy(_._1).map(_._2).scanLeft(0.0)(_ + _) // Compute cumulative sum
+                 .map(_.abs).max/(a.size*b.size)
+        }).max
     }
 
     /** Run the INSIGHT algorithm
