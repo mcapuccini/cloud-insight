@@ -41,6 +41,9 @@ class CloudInsight
 
     /** Measures Kolmogorov distance between two data sets
       *
+      * Each datasets consists of a list of sets of values (one set per
+      * timepoint). x and y should have the same length.
+      *
       * @param x first dataset
       * @param y second dataset
       * @return the distance between the two datasets
