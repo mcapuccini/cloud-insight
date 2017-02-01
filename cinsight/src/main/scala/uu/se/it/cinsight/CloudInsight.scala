@@ -1,5 +1,6 @@
 package uu.se.it.cinsight
 import scala.collection.mutable.HashMap
+import scala.math._
 
 /** Main engine
   *
@@ -9,17 +10,27 @@ import scala.collection.mutable.HashMap
   * @param u number of particles per populations
   * @param epsilon tolerance schedule
   * @param model filename of the model
-  * @param data flow cytometry data set
+  * @param data flow cytometry data set (sequence of pairs (time, cytometry data))
   */
 class CloudInsight
     (
         prior: (HashMap[String, Double]) => Double,
         beta: Double,
-        u: Int,
+        U: Int,
         epsilon: Seq[Double],
         model: String,
         data: Seq[(Double, Iterable[Double])])
 {
+    val alpha = 1 - sqrt(1-beta)
+    val T = epsilon.length
+    val M = (for ((time, values) <- data) yield values.size).min
+    val S = for (eps <- epsilon) yield (
+            ceil(-log(alpha/2)
+                /(2*pow(eps-sqrt(-log(alpha/2)/(2*M)),2))).toInt
+            )
+
+    var t = 1
+
     /** Samples one candidate parameter point according to prior distribution
       *     and previously accepted points.
       *
