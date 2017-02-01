@@ -1,6 +1,10 @@
 package uu.se.it.cinsight
+
 import scala.collection.mutable.HashMap
-import scala.math._
+import scala.math.ceil
+import scala.math.log
+import scala.math.pow
+import scala.math.sqrt
 
 /** Main engine
   *

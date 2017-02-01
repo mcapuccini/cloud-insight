@@ -1,15 +1,14 @@
 package uu.se.it.cinsight
 
-import org.junit.runner.RunWith
-import org.apache.spark.SharedSparkContext
-import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.BeforeAndAfter
-
 import scala.collection.immutable.List
 import scala.collection.mutable.HashMap
+import scala.math.sqrt
 
-import scala.math._
+import org.apache.spark.SharedSparkContext
+import org.junit.runner.RunWith
+import org.scalatest.BeforeAndAfter
+import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAfter {
