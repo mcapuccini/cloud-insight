@@ -40,7 +40,7 @@ class CloudInsight(
    * @return a new parameter point
    */
   def sample_candidate(): HashMap[String, Double] = {
-    return HashMap[String, Double]()
+    throw new NotImplementedError
   }
 
   /**
@@ -51,7 +51,7 @@ class CloudInsight(
    * @return simulated flow cytometry data according to theta
    */
   def run_simulation(theta: HashMap[String, Double], sc: Int): Seq[Iterable[Double]] = {
-    return Seq[Iterable[Double]]()
+    throw new NotImplementedError
   }
 
   /**
@@ -81,6 +81,6 @@ class CloudInsight(
    * @return sampled posterior distribution of the parameter space
    */
   def run(): Seq[Iterable[HashMap[String, Double]]] = {
-    return Seq[Iterable[HashMap[String, Double]]]()
+    throw new NotImplementedError
   }
 }
