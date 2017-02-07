@@ -18,7 +18,7 @@ import scala.math.sqrt
  * @param data flow cytometry data set (sequence of pairs (time, cytometry data))
  */
 class CloudInsight(
-    prior: (HashMap[String, Double]) => Double,
+    prior: HashMap[String, (Double, Double)],
     beta: Double,
     U: Int,
     epsilon: Seq[Double],

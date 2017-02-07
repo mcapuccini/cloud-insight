@@ -17,7 +17,8 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
 
   before {
     engine = new CloudInsight(
-      (x: HashMap[String, Double]) => 0.0,
+      HashMap[String, (Double, Double)]("alpha" -> (1.0, 2.0),
+                                        "beta" -> (10.0, 15.0)),
       0.05,
       10,
       List(0.1, 0.09, 0.06, 0.04),
