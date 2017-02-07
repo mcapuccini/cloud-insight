@@ -18,12 +18,12 @@ import scala.math.sqrt
  * @param data flow cytometry data set (sequence of pairs (time, cytometry data))
  */
 class CloudInsight(
-    prior: HashMap[String, (Double, Double)],
-    beta: Double,
-    U: Int,
-    epsilon: Seq[Double],
-    model: String,
-    data: Seq[(Double, Iterable[Double])]) {
+    val prior: HashMap[String, (Double, Double)],
+    val beta: Double,
+    val U: Int,
+    val epsilon: Seq[Double],
+    val model: String,
+    val data: Seq[(Double, Iterable[Double])]) {
   val alpha = 1 - sqrt(1 - beta)
   val T = epsilon.length
   val M = (for ((time, values) <- data) yield values.size).min
