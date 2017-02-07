@@ -1,10 +1,13 @@
 package uu.se.it.cinsight
 
+import scala.annotation.elidable
+import scala.annotation.elidable.ASSERTION
 import scala.collection.mutable.HashMap
 import scala.math.ceil
 import scala.math.log
 import scala.math.pow
 import scala.math.sqrt
+import scala.util.Random
 
 /**
  * Main engine
@@ -32,6 +35,7 @@ class CloudInsight(
       / (2 * pow(eps - sqrt(-log(alpha / 2) / (2 * M)), 2))).toInt)
 
   var t = 1
+  var particles = List[List[(HashMap[String, Double], Double)]]()
 
   /**
    * Samples one candidate parameter point according to prior distribution
@@ -40,7 +44,21 @@ class CloudInsight(
    * @return a new parameter point
    */
   def sample_candidate(): HashMap[String, Double] = {
-    throw new NotImplementedError
+    t match {
+      case 1 => {
+        for ((parameter, bounds) <- prior) yield (parameter, Random.nextDouble * (bounds._2 - bounds._1) + bounds._1)
+      }
+      case _ => {
+        for (
+          (parameter, value) <- particles.apply(t - 2).scanLeft((HashMap[String, Double](), 0.0))(
+            (p1, p2) => (p2._1, p1._2 + p2._2))
+            .map({ case (p, w) => (p, w / particles.apply(t - 2).map(_._2).sum) })
+            .filter(_._2 > Random.nextDouble).head._1
+        ) yield (parameter,
+          value * (Random.nextDouble * 2 * epsilon.apply(t - 1) + 1 - epsilon.apply(t - 1)))
+      }
+
+    }
   }
 
   /**
