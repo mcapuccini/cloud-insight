@@ -60,6 +60,21 @@ class CloudInsight(
 
     }
   }
+  
+  def evaluate_particle_birthdeath(particle: Vector, sc: Int, tol: Double) : Boolean = {
+     var result:String
+    if model=="birthdeath" {
+      var location="/BirthDeath/problem_birthdeath.xml"
+    } else {
+      throw new NotImplementedError
+    } 
+
+    result = "./INSIGHTv3 ../example_data/"+location+" -X" + particle.toString() + "-t" tol.toString() + "-N " + sc.toString())  !!
+    if result=="0"
+      return 0
+    else
+      return 1
+  }
 
   /**
    * Performs sc simulations with given parameter theta
