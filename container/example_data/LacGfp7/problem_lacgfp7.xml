@@ -1,0 +1,143 @@
+<problem>
+	<model>
+		<model_code>10</model_code>
+		<!-- The model code 10 is LACGFP7 -->
+		<measuredspecies>
+			<measurement>
+				<index>8</index>
+			</measurement>
+		</measuredspecies>
+		<background>
+			<measurement>
+			<index>0</index><fcsfile>bg.fcs</fcsfile><fcsparam>7</fcsparam><samples>80000</samples>
+			</measurement>
+		</background>
+		<priors>
+			<prior> 
+				<index>0</index> <lb>5</lb> <ub>200</ub>
+				<!-- mu for fluorescence -->
+			</prior>
+			<prior> 
+				<index>1</index> <lb>5</lb> <ub>200</ub>
+				<!-- sigma for fluorescence -->
+			</prior>
+			<prior>
+				<index>2</index> <lb>1</lb> <ub>50</ub>
+			</prior>
+			<prior>
+				<index>3</index> <lb>0.1</lb> <ub>30</ub>
+				<!-- Half-life of 1.5 min to 7 hours -->
+			</prior>
+			<prior>
+				<index>4</index> <lb>1</lb> <ub>50</ub>
+			</prior>
+			<prior>
+				<index>5</index> <lb>0.1</lb> <ub>20</ub>
+				<!-- Half-life of 2 min to 7 hours -->
+			</prior>
+			<prior>
+				<index>6</index> <lb>1</lb> <ub>100</ub>
+			</prior>
+			<prior>
+				<index>7</index> <lb>1.6e-1</lb> <ub>3000</ub>
+				<!-- Dissociation constant Kd = k7/k6 of 1e-9 M to 1e-13 M  ***RECALCULATE*** -->
+			</prior>
+			<prior>
+				<index>8</index> <lb>0.1</lb> <ub>20</ub>
+				<!-- Half-life of 2 min to 7 hours -->
+			</prior>
+			<prior>
+				<index>9</index> <lb>1.6e-3</lb> <ub>1.6e0</ub>
+				<!-- Dissociation constant Kd = k9/k8 of 1e-7 M to 1e-10 M -->
+			</prior>
+			<prior>
+				<index>10</index> <lb>0.1</lb> <ub>20</ub>
+				<!-- Half-life of 2 min to 7 hours -->
+			</prior>
+			<prior>
+				<index>11</index> <lb>1.6e-1</lb> <ub>1.6e3</ub>
+				<!-- Dissociation constant Kd = k11/k10 of 1e-9 M to 1e-13 M -->
+			</prior>
+			<prior>
+				<index>12</index> <lb>0.1</lb> <ub>20</ub>
+				<!-- Half-life of 2 min to 7 hours -->
+			</prior>
+			<prior>
+				<index>13</index> <lb>1</lb> <ub>150</ub>
+			</prior>
+			<prior>
+				<index>14</index> <lb>0.1</lb> <ub>15</ub>
+			</prior>	
+			<prior>
+				<index>15</index> <lb>1e-5</lb> <ub>1</ub>
+			</prior>
+			<prior>
+				<index>16</index> <lb>0.1</lb> <ub>20</ub>
+				<!-- Half-life of 2 min to 7 hours -->
+			</prior>
+			<prior>
+				<index>17</index> <lb>1</lb> <ub>50</ub>
+			</prior>	
+			<prior>
+				<index>18</index> <dist>uniform</dist> <lb>0.1</lb> <ub>20</ub>
+				<!-- Half-life of 2 min to 7 hours -->
+			</prior>	
+			<prior>
+				<index>19</index> <lb>0.1</lb> <ub>20</ub>
+				<!-- GFP maturation time of 2 min to 7 hours -->
+			</prior>
+		</priors>
+	</model>
+	<data mode='fcs' one_file = 'no'>
+		<timept>
+			<samples>80000</samples>
+			<index>0</index> <time>0.0</time>
+			<fcsfile>overnight.fcs</fcsfile>
+			<measuredspecies>
+				<measurement>
+					<index>1</index> <fcsparam>7</fcsparam>
+				</measurement>		
+			</measuredspecies>
+		</timept>
+		<timept>
+			<samples>80000</samples>
+			<index>1</index> <time>2.0</time>
+			<fcsfile>10_uM_2_h.fcs</fcsfile>
+			<measuredspecies>
+				<measurement>
+					<index>1</index> <fcsparam>7</fcsparam>
+				</measurement>		
+			</measuredspecies>
+		</timept>
+		<timept>
+			<samples>80000</samples>
+			<index>2</index> <time>3.0</time>
+			<fcsfile>10_uM_3_h.fcs</fcsfile>
+			<measuredspecies>
+				<measurement>
+					<index>1</index> <fcsparam>7</fcsparam>
+				</measurement>		
+			</measuredspecies>
+		</timept>
+		<timept>
+			<samples>80000</samples>
+			<index>3</index> <time>4.0</time>
+			<fcsfile>10_uM_4_h.fcs</fcsfile>
+			<measuredspecies>
+				<measurement>
+					<index>1</index> <fcsparam>7</fcsparam>
+				</measurement>		
+			</measuredspecies>
+		</timept>
+		<timept>
+			<samples>80000</samples>	
+			<index>4</index> <time>5.0</time>
+			<fcsfile>10_uM_5_h.fcs</fcsfile>
+			<measuredspecies>
+				<measurement>
+					<index>1</index> <fcsparam>7</fcsparam>
+				</measurement>		
+			</measuredspecies>
+		</timept>
+	</data>
+</problem>
