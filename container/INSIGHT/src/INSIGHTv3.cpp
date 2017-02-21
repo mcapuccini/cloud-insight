@@ -57,6 +57,7 @@ const static std::string OUTPUT_FILE = "";
 const static std::string PREVIOUS_POPULATION_FILE = "";
 const static std::string PARTICLE_STRING = "2 3";
 const static bool IGNORE_WEIGHTS = false;
+const static bool VERBOSE = false;
 const static int PRINT = 20;
 const static double BETA = 0.01;
 const static double TOL_KOLMOGOROV = 0.0000001;
@@ -72,6 +73,7 @@ int num_particles;
 std::string output_file_name;
 std::string prev_pop_file;
 bool ignore_weights;
+bool verbose; // surporess alloutput
 int print;
 double beta;
 double tolerance_kolmogorov;
@@ -166,19 +168,21 @@ int main(int argc, char *argv[]) {
         pcount++;
     }
 
-    std::cout << "particle 1: " << particle << std::endl;
+    if(verbose)
+        std::cout << "particle 1: " << particle << std::endl;
 
     acceptable = evaluator->isParticleAcceptable(particle);
     if(acceptable)
-        std::cout << "\n\nParticle is acceptable." << std::endl;
+        std::cout << "1" << std::endl;
     else
-        std::cout << "\n\nParticle is not acceptable." << std::endl;
+        std::cout << "0" << std::endl;
 
 	clock_t toc = clock();
-	std::cout << "\n\nSMC inference complete." << std::endl;
-	std::cout << "\nElapsed time: " << ((double) (toc - tic)) / CLOCKS_PER_SEC
-			<< "sec." << std::endl;
-
+	if(verbose) {
+        std::cout << "\n\nSMC inference complete." << std::endl;
+        std::cout << "\nElapsed time: " << ((double) (toc - tic)) / CLOCKS_PER_SEC
+                << "sec." << std::endl;
+	}
 	return 0;
 }
 
@@ -221,7 +225,8 @@ void handleOptions(int argc, char * argv[]) {
                     po::value<std::string>(&particle_string)->default_value(
              PARTICLE_STRING),"Particle string")("t,t",po::value<double>(&particle_tolerance)->default_value(
              PARTICLE_TOLERANCE),"Particle tolerance")("N,N",po::value<int>(&num_trajectories)->default_value(
-                     NUM_TRAJECTORIES),"Number of trajectories");
+                     NUM_TRAJECTORIES),"Number of trajectories")("v,v",po::value<bool>(&verbose)->default_value(
+                             VERBOSE),"Verbose");
 
 
 	po::positional_options_description p;
@@ -253,30 +258,32 @@ void handleOptions(int argc, char * argv[]) {
 
 void printInfo(ModelDescription& desc) {
 
-	std::cout << "\nThis is INSIGHT v3.0\n" << std::endl;
-	std::cout << "Problem file path:" << std::endl;
-	std::cout << problem_file_name << std::endl;
-	std::cout << "\nThe new particle population will be saved in:" << std::endl;
-	std::cout << output_file_name << std::endl;
+    if(verbose) {
+        std::cout << "\nThis is INSIGHT v3.0\n" << std::endl;
+        std::cout << "Problem file path:" << std::endl;
+        std::cout << problem_file_name << std::endl;
+        std::cout << "\nThe new particle population will be saved in:" << std::endl;
+        std::cout << output_file_name << std::endl;
 
-	std::cout << "\nWill estimate " << desc.model->model_name << " using "
-			<< num_particles << " SMC particles." << std::endl;
-	std::cout << "\nThe data is assumed to have been created using "
-			<< desc.model->num_outputs << " outputs," << std::endl;
-	std::cout << "measured at " << desc.times->size() << " timepoints."
-			<< std::endl;
+        std::cout << "\nWill estimate " << desc.model->model_name << " using "
+                << num_particles << " SMC particles." << std::endl;
+        std::cout << "\nThe data is assumed to have been created using "
+                << desc.model->num_outputs << " outputs," << std::endl;
+        std::cout << "measured at " << desc.times->size() << " timepoints."
+                << std::endl;
 
-	if (prev_pop_file.length() > 0) {
-		std::cout << "A previous population is loaded from file: " << std::endl;
-		std::cout << prev_pop_file << std::endl;
-	}
-	std::cout << "To estimate the density of each population "
-			<< "Kernel Density Estimation with uniform Kernel" << std::endl;
-	if (ignore_weights) {
-		std::cout << std::endl << "Particle weights will be ignored by sampler!"
-				<< std::endl;
-	}
-	std::cout << "is used." << std::endl;
-	std::cout << "\nThe sequential version of the algorithm is used."
-			<< std::endl << std::endl;
+        if (prev_pop_file.length() > 0) {
+            std::cout << "A previous population is loaded from file: " << std::endl;
+            std::cout << prev_pop_file << std::endl;
+        }
+        std::cout << "To estimate the density of each population "
+                << "Kernel Density Estimation with uniform Kernel" << std::endl;
+        if (ignore_weights) {
+            std::cout << std::endl << "Particle weights will be ignored by sampler!"
+                    << std::endl;
+        }
+        std::cout << "is used." << std::endl;
+        std::cout << "\nThe sequential version of the algorithm is used."
+                << std::endl << std::endl;
+    }
 }

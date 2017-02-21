@@ -23,7 +23,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
       0.05,
       10,
       List(0.1, 0.09, 0.06, 0.04),
-      "model.xml",
+      "birthdeath",
       List((1.0, List.fill(1000)(List(0.0, 1.0, 2.0, 1.0, 0.5)).flatten),
         (2.0, List.fill(1000)(List(10.0, 11.0, 10.0, 12.0, 11.1)).flatten),
         (3.0, List.fill(1500)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)))
@@ -34,7 +34,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
       0.05,
       10,
       List(0.1, 0.0),
-      "model.xml",
+      "birthdeath",
       List((1.0, List.fill(1000)(List(0.0, 1.0, 2.0, 1.0, 0.5)).flatten),
         (2.0, List.fill(1000)(List(10.0, 11.0, 10.0, 12.0, 11.1)).flatten),
         (3.0, List.fill(1500)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)))
@@ -81,6 +81,26 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
     for (particle <- engine2.particles.tail.head) {
       assert(particle._1.apply("alpha") === 1.0)
     }
+
+  }
+  test("Particle is accepted") {
+
+    var tol=10
+    var sc=100
+    var particle= HashMap[String, Double]("birth" -> 2.0,
+        "death" -> 2.0)
+	
+    assert(engine1.evaluate_particle(particle,sc,tol) === 1)
+
+  }
+  test("Particle is not accepted") {
+
+    var tol=0.2;
+    var sc=100;
+    var particle= HashMap[String, Double]("birth" -> 2.0,
+        "death" -> 2.0)
+	
+    assert(engine1.evaluate_particle(particle,sc,tol) === 0)
 
   }
 }

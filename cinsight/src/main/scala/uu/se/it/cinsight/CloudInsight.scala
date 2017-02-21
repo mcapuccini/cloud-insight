@@ -60,20 +60,27 @@ class CloudInsight(
 
     }
   }
-  
-  def evaluate_particle_birthdeath(particle: Vector, sc: Int, tol: Double) : Boolean = {
-     var result:String
+
+   /**
+   * Evaluate particle using the sequential solver
+   *
+   * @param particle Vector of particles
+   * @param sc number of simulations to perform
+   * @param tol tolerance for the acceptance
+   * @return was the particle accepted
+   */
+  def evaluate_particle(particle: HashMap[String, Double], sc: Int, tol: Double) : Boolean = {
     if model=="birthdeath" {
-      var location="/BirthDeath/problem_birthdeath.xml"
+      var cmd = "../INSIGHT/INSIGHTv3 --problem_file ../example_data/BirthDeath/problem_birthdeath.xml -N "+N.toString+" -t "+tol.toString() +" -X '"+particle("birth").toString()+" "+particle("death").toString()+"'"
     } else {
       throw new NotImplementedError
     } 
-
-    result = "./INSIGHTv3 ../example_data/"+location+" -X" + particle.toString() + "-t" tol.toString() + "-N " + sc.toString())  !!
-    if result=="0"
-      return 0
-    else
+   
+    var result = cmd.!!
+    if(result contains "1")
       return 1
+    else
+      return 0
   }
 
   /**
