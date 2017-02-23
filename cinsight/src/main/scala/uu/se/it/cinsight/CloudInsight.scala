@@ -65,24 +65,34 @@ class CloudInsight(
    /**
    * Evaluate particle using the sequential solver
    *
-   * @param particle Vector of particles
+   * @param particles List of Vectors of particles
    * @param sc number of simulations to perform
    * @param tol tolerance for the acceptance
    * @return was the particle accepted
    */
-  def evaluate_particle(particle: HashMap[String, Double], sc: Int, tol: Double) : Boolean = {
+  def evaluate_particle(particle: List[HashMap[String, Double]], sc: Int, tol: Double) : List[Boolean] = {    
     var cmd=""
     if (model=="birthdeath") {
-      cmd = "../INSIGHT/INSIGHTv3 --problem_file ../example_data/BirthDeath/problem_birthdeath.xml -N "+sc.toString+" -t "+tol.toString() +" -X '"+particle("birth").toString()+" "+particle("death").toString()+"'"
+      
+      // The serial solver will by default read the particle list from /input and write it back to /output
+      // This is how the serial shell call looks like:
+      //cmd = "../INSIGHT/INSIGHTv3 --problem_file ../example_data/BirthDeath/problem_birthdeath.xml -N "+sc.toString+" -t "+tol.toString();
+      //cmd.!!
+      
+      val topHits = new EasyMapReduce(rdd)
+      .map(
+        imageName = "cloud-init",
+        command =
+          "./INSIGHT/INSIGHTv3"+
+          " --problem_file ./example_data/BirthDeath/problem_birthdeath.xml"+
+          " -N "+sc.toString+
+          " -t "+tol.toString())
+
     } else {
       throw new NotImplementedError
     } 
-   
-    var result = cmd.!!
-    if(result contains "1")
-      return true
-    else
-      return false
+
+    return List[Boolean]()
   }
 
   /**
