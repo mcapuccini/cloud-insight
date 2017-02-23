@@ -1,5 +1,6 @@
 package uu.se.it.cinsight
 
+import sys.process._
 import scala.annotation.elidable
 import scala.annotation.elidable.ASSERTION
 import scala.collection.mutable.HashMap
@@ -70,17 +71,18 @@ class CloudInsight(
    * @return was the particle accepted
    */
   def evaluate_particle(particle: HashMap[String, Double], sc: Int, tol: Double) : Boolean = {
-    if model=="birthdeath" {
-      var cmd = "../INSIGHT/INSIGHTv3 --problem_file ../example_data/BirthDeath/problem_birthdeath.xml -N "+N.toString+" -t "+tol.toString() +" -X '"+particle("birth").toString()+" "+particle("death").toString()+"'"
+    var cmd=""
+    if (model=="birthdeath") {
+      cmd = "../INSIGHT/INSIGHTv3 --problem_file ../example_data/BirthDeath/problem_birthdeath.xml -N "+sc.toString+" -t "+tol.toString() +" -X '"+particle("birth").toString()+" "+particle("death").toString()+"'"
     } else {
       throw new NotImplementedError
     } 
    
     var result = cmd.!!
     if(result contains "1")
-      return 1
+      return true
     else
-      return 0
+      return false
   }
 
   /**

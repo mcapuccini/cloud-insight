@@ -90,7 +90,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
     var particle= HashMap[String, Double]("birth" -> 2.0,
         "death" -> 2.0)
 	
-    assert(engine1.evaluate_particle(particle,sc,tol) === 1)
+    assert(engine1.evaluate_particle(particle,sc,tol) === true)
 
   }
   test("Particle is not accepted") {
@@ -100,7 +100,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
     var particle= HashMap[String, Double]("birth" -> 2.0,
         "death" -> 2.0)
 	
-    assert(engine1.evaluate_particle(particle,sc,tol) === 0)
+    assert(engine1.evaluate_particle(particle,sc,tol) === false)
 
   }
 }
