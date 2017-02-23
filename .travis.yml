@@ -1,4 +1,7 @@
 language: java
 
+services:
+- docker
+
 before_install: cd cinsight
 
