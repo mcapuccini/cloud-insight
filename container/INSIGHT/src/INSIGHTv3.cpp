@@ -15,6 +15,9 @@
 
 #include <ctime>
 #include <vector>
+#include <iostream>
+#include <fstream>
+#include <ostream>
 
 #include <stdio.h>  /* defines FILENAME_MAX */
 #ifdef WINDOWS
@@ -55,7 +58,8 @@ const static double FINAL_TOLERANCE = 0.03;
 const static int NUM_PARTICLES = 1000;
 const static std::string OUTPUT_FILE = "";
 const static std::string PREVIOUS_POPULATION_FILE = "";
-const static std::string PARTICLE_STRING = "2 3";
+const static std::string PARTICLE_INPUT = "/input";
+const static std::string PARTICLE_OUTPUT = "/output";
 const static bool IGNORE_WEIGHTS = false;
 const static bool VERBOSE = false;
 const static int PRINT = 20;
@@ -80,7 +84,8 @@ double tolerance_kolmogorov;
 double kappa_kolmogorov;
 double tol_kappa_kolmovorog;
 double particle_tolerance;
-std::string particle_string;
+std::string particle_in;
+std::string particle_out;
 int num_trajectories;
 
 namespace po = boost::program_options;
@@ -158,7 +163,21 @@ int main(int argc, char *argv[]) {
     parameters particle(desc.model->num_params);
     //first_sampler->sampleParticle(&particle);
 
-    std::stringstream iss( particle_string );
+//open particle input file
+std::ifstream infile (particle_in.c_str());
+
+//open particle output file
+std::ofstream outfile (particle_out.c_str());
+if (!outfile.is_open())
+    return -1; // error!
+
+std::string line;
+int particle_count=0;
+while (std::getline(infile, line)) // parse particles one by one
+{
+    std::istringstream iss(line);
+    double a, b;
+    //if (!(iss >> a >> b)) { break; } 
 
     double number=2.0;
     int pcount=0;
@@ -169,13 +188,15 @@ int main(int argc, char *argv[]) {
     }
 
     if(verbose)
-        std::cout << "particle 1: " << particle << std::endl;
+        std::cout << "particle " << particle_count << ": " << particle << std::endl;
 
     acceptable = evaluator->isParticleAcceptable(particle);
     if(acceptable)
-        std::cout << "1" << std::endl;
+        outfile << "1\n";
     else
-        std::cout << "0" << std::endl;
+        outfile << "0\n";
+}
+outfile.close();
 
 	clock_t toc = clock();
 	if(verbose) {
@@ -222,8 +243,9 @@ void handleOptions(int argc, char * argv[]) {
             po::value<double>(&tol_kappa_kolmovorog)->default_value(
                     TOL_KAPPA_KOLMOGOROV),
             "the tolerance for the algorithm to compute kappa for the computation of the Kolmogorov distance")("X,X",
-                    po::value<std::string>(&particle_string)->default_value(
-             PARTICLE_STRING),"Particle string")("t,t",po::value<double>(&particle_tolerance)->default_value(
+                    po::value<std::string>(&particle_in)->default_value(PARTICLE_INPUT),"Particle input file")("o,o",
+                    po::value<std::string>(&particle_out)->default_value(PARTICLE_OUTPUT),"Particle output file")("t,t",
+		po::value<double>(&particle_tolerance)->default_value(
              PARTICLE_TOLERANCE),"Particle tolerance")("N,N",po::value<int>(&num_trajectories)->default_value(
                      NUM_TRAJECTORIES),"Number of trajectories")("v,v",po::value<bool>(&verbose)->default_value(
                              VERBOSE),"Verbose");
