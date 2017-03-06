@@ -9,6 +9,16 @@ import scala.math.log
 import scala.math.pow
 import scala.math.sqrt
 import scala.util.Random
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+import org.apache.hadoop.io.LongWritable
+import org.apache.hadoop.io.Text
+import org.apache.hadoop.mapred.TextInputFormat
+import org.apache.hadoop.io.{MapWritable, Text}
+import se.uu.it.easymr.EasyMapReduce
+import java.io.PrintWriter
+import scopt.OptionParser
+import se.uu.it.easymr.EasyMapParams
 
 /**
  * Main engine
@@ -71,26 +81,50 @@ class CloudInsight(
    * @return was the particle accepted
    */
   def evaluate_particle(particle: List[HashMap[String, Double]], sc: Int, tol: Double) : List[Boolean] = {    
+    
+    if (model!="birthdeath") {
+      throw new NotImplementedError
+    } 
+    
+    // from EasyMapReduce Example:
+    // Init context
+    val conf = new SparkConf()
+      .setAppName("OEDocking")
+
+    if (System.getenv("EASYMR_TMP") != null) {
+      conf.setExecutorEnv("EASYMR_TMP", System.getenv("EASYMR_TMP"))
+    }
+    if (System.getenv("TMPDIR") != null) {
+      conf.setExecutorEnv("TMPDIR", System.getenv("TMPDIR"))
+    }
+    val sc = new SparkContext(conf)
+
+    // Read
+    val defaultParallelism =
+      sc.getConf.get("spark.default.parallelism", "2").toInt
+    val rdd = sc.hadoopFile[LongWritable, Text, TextInputFormat](
+      null, defaultParallelism)
+    .map(_._2.toString) //convert to string RDD
+
     var cmd=""
-    if (model=="birthdeath") {
-      
-      // The serial solver will by default read the particle list from /input and write it back to /output
-      // This is how the serial shell call looks like:
-      //cmd = "../INSIGHT/INSIGHTv3 --problem_file ../example_data/BirthDeath/problem_birthdeath.xml -N "+sc.toString+" -t "+tol.toString();
-      //cmd.!!
-      
-      val topHits = new EasyMapReduce(rdd)
+
+    // The serial solver will by default read the particle list from /input and write it back to /output
+    // This is how the serial shell call looks like:
+    //cmd = "../INSIGHT/INSIGHTv3 --problem_file ../example_data/BirthDeath/problem_birthdeath.xml -N "+sc.toString+" -t "+tol.toString();
+    //cmd.!!
+
+    val particles = new EasyMapReduce(rdd)
       .map(
         imageName = "cloud-init",
         command =
-          "./INSIGHT/INSIGHTv3"+
-          " --problem_file ./example_data/BirthDeath/problem_birthdeath.xml"+
-          " -N "+sc.toString+
-          " -t "+tol.toString())
+          "./INSIGHT/INSIGHTv3" +
+            " --problem_file ./example_data/BirthDeath/problem_birthdeath.xml" +
+            " -N " + sc.toString +
+            " -t " + tol.toString())
 
-    } else {
-      throw new NotImplementedError
-    } 
+    // Stop context
+    sc.stop   
+
 
     return List[Boolean]()
   }
