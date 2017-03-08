@@ -11,6 +11,7 @@ import scala.math.sqrt
 import scala.util.Random
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
+import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.TextInputFormat
@@ -19,6 +20,7 @@ import se.uu.it.easymr.EasyMapReduce
 import java.io.PrintWriter
 import scopt.OptionParser
 import se.uu.it.easymr.EasyMapParams
+
 
 /**
  * Main engine
@@ -80,31 +82,18 @@ class CloudInsight(
    * @param tol tolerance for the acceptance
    * @return was the particle accepted
    */
-  def evaluate_particle(particle: List[HashMap[String, Double]], sc: Int, tol: Double) : List[Boolean] = {    
+  def evaluate_particle(particle: List[Vector], sims: Int, tol: Double, sc: SparkContext) : Seq[Boolean] = {    
     
     if (model!="birthdeath") {
       throw new NotImplementedError
     } 
     
-    // from EasyMapReduce Example:
-    // Init context
-    val conf = new SparkConf()
-      .setAppName("OEDocking")
-
-    if (System.getenv("EASYMR_TMP") != null) {
-      conf.setExecutorEnv("EASYMR_TMP", System.getenv("EASYMR_TMP"))
-    }
-    if (System.getenv("TMPDIR") != null) {
-      conf.setExecutorEnv("TMPDIR", System.getenv("TMPDIR"))
-    }
-    val sc = new SparkContext(conf)
-
-    // Read
     val defaultParallelism =
       sc.getConf.get("spark.default.parallelism", "2").toInt
-    val rdd = sc.hadoopFile[LongWritable, Text, TextInputFormat](
-      null, defaultParallelism)
-    .map(_._2.toString) //convert to string RDD
+      
+    val rdd = sc.parallelize(particle,defaultParallelism)
+    
+    val stringrdd = rdd.map(_.toJson)
 
     var cmd=""
 
@@ -113,20 +102,17 @@ class CloudInsight(
     //cmd = "../INSIGHT/INSIGHTv3 --problem_file ../example_data/BirthDeath/problem_birthdeath.xml -N "+sc.toString+" -t "+tol.toString();
     //cmd.!!
 
-    val particles = new EasyMapReduce(rdd)
-      .map(
+    val particles = new EasyMapReduce(stringrdd)
+      .mapPartitions(
         imageName = "cloud-init",
         command =
           "./INSIGHT/INSIGHTv3" +
             " --problem_file ./example_data/BirthDeath/problem_birthdeath.xml" +
-            " -N " + sc.toString +
+            " -N " + sims.toString +
             " -t " + tol.toString())
 
-    // Stop context
-    sc.stop   
+    particles.getRDD.collect().map(_.toBoolean)
 
-
-    return List[Boolean]()
   }
 
   /**

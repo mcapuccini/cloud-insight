@@ -1,5 +1,6 @@
 package uu.se.it.cinsight
 
+import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import scala.collection.immutable.List
 import scala.collection.mutable.HashMap
 import scala.math.sqrt
@@ -86,27 +87,27 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
   test("Particle is accepted") {
 
     var tol=10
-    var sc=100
+    var sim=100
     var particles= List(
-        HashMap[String, Double]("birth" -> 2.0, "death" -> 2.0),
-        HashMap[String, Double]("birth" -> 3.0, "death" -> 1.0),
-        HashMap[String, Double]("birth" -> 4.0, "death" -> 3.0),
-        HashMap[String, Double]("birth" -> 5.0, "death" -> 9.0))
+        Vector(2.0,2.0),
+        Vector(3.0,1.0),
+        Vector(4.0,3.0),
+        Vector(5.0,9.0))
 
-    assert(engine1.evaluate_particle(particles,sc,tol) === List(true, true, true, true))
+    assert(engine1.evaluate_particle(particles,sim,tol,sc) === Seq(true, true, true, true))
 
   }
   test("Particle is not accepted") {
 
     var tol=0.2;
-    var sc=100;
+    var sim=100;
     var particles= List(
-        HashMap[String, Double]("birth" -> 2.0, "death" -> 2.0),
-        HashMap[String, Double]("birth" -> 3.0, "death" -> 1.0),
-        HashMap[String, Double]("birth" -> 4.0, "death" -> 3.0),
-        HashMap[String, Double]("birth" -> 5.0, "death" -> 9.0))
+        Vector(2.0,2.0),
+        Vector(3.0,1.0),
+        Vector(4.0,3.0),
+        Vector(5.0,9.0))
 	
-    assert(engine1.evaluate_particle(particles,sc,tol) === List(false, false, false, false))
+    assert(engine1.evaluate_particle(particles,sim,tol,sc) === List(false, false, false, false))
 
   }
 }
