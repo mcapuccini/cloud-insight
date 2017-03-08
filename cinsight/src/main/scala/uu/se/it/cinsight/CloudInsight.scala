@@ -94,7 +94,7 @@ class CloudInsight(
     val rdd = sc.parallelize(particle,defaultParallelism)
     
     val stringrdd = rdd.map(_.toJson)
-
+    
     var cmd=""
 
     // The serial solver will by default read the particle list from /input and write it back to /output

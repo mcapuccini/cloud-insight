@@ -89,10 +89,10 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
     var tol=10
     var sim=100
     var particles= List(
-        Vector(2.0,2.0),
-        Vector(3.0,1.0),
-        Vector(4.0,3.0),
-        Vector(5.0,9.0))
+        Vectors.dense(2.0,2.0),
+        Vectors.dense(3.0,1.0),
+        Vectors.dense(4.0,3.0),
+        Vectors.dense(5.0,9.0))
 
     assert(engine1.evaluate_particle(particles,sim,tol,sc) === Seq(true, true, true, true))
 
@@ -102,10 +102,10 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
     var tol=0.2;
     var sim=100;
     var particles= List(
-        Vector(2.0,2.0),
-        Vector(3.0,1.0),
-        Vector(4.0,3.0),
-        Vector(5.0,9.0))
+        Vectors.dense(2.0,2.0),
+        Vectors.dense(3.0,1.0),
+        Vectors.dense(4.0,3.0),
+        Vectors.dense(5.0,9.0))
 	
     assert(engine1.evaluate_particle(particles,sim,tol,sc) === List(false, false, false, false))
 
