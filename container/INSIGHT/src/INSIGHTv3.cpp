@@ -18,6 +18,8 @@
 #include <iostream>
 #include <fstream>
 #include <ostream>
+#include <sstream>
+#include <map>
 
 #include <stdio.h>  /* defines FILENAME_MAX */
 #ifdef WINDOWS
@@ -33,6 +35,8 @@ char cCurrentPath[FILENAME_MAX];
 #include <boost/program_options.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/ref.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <Eigen/Dense>
 
 #include "INSIGHTv3.h"
@@ -50,6 +54,8 @@ char cCurrentPath[FILENAME_MAX];
 #include "PrevPopReader.h"
 
 using namespace INSIGHTv3;
+using boost::property_tree::ptree;
+using boost::property_tree::read_json;
 
 //Default values
 const static std::string PROBLEM_FILE = "";
@@ -173,16 +179,23 @@ if (!outfile.is_open())
 
 std::string line;
 int particle_count=0;
+
 while (std::getline(infile, line)) // parse particles one by one
 {
-    std::istringstream iss(line);
-    double a, b;
-    //if (!(iss >> a >> b)) { break; } 
+
+    //using text file
+    unsigned first = line.find("[");
+    unsigned last = line.find("]");
+    std::string strNew = line.substr (first+1,last-first);
+
+    std::istringstream iss(strNew);
+    char ch;
 
     double number=2.0;
     int pcount=0;
     while (pcount<desc.model->num_params) {
         iss >> number;
+        iss>>ch; //flush the ,
         particle(pcount)=number;
         pcount++;
     }
