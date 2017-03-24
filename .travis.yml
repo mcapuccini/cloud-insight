@@ -1,7 +1,12 @@
 language: java
 
+env:
+- TMPDIR=/tmp
+
 services:
 - docker
 
-before_install: cd cinsight
+before_install: 
+- docker build -t insight-particle-evaluator ./container
+- cd cinsight
 
