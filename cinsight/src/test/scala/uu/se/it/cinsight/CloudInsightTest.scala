@@ -1,11 +1,11 @@
 package uu.se.it.cinsight
 
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import scala.collection.immutable.List
 import scala.collection.mutable.HashMap
 import scala.math.sqrt
 
 import org.apache.spark.SharedSparkContext
+import org.apache.spark.mllib.linalg.Vectors
 import org.junit.runner.RunWith
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
@@ -86,28 +86,28 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
   }
   test("Particle is accepted") {
 
-    var tol=10
-    var sim=100
-    var particles= List(
-        Vectors.dense(2.0,2.0),
-        Vectors.dense(3.0,1.0),
-        Vectors.dense(4.0,3.0),
-        Vectors.dense(5.0,9.0))
+    var tol = 10
+    var sim = 100
+    var particles = List(
+      Vectors.dense(2.0, 2.0),
+      Vectors.dense(3.0, 1.0),
+      Vectors.dense(4.0, 3.0),
+      Vectors.dense(5.0, 9.0))
 
-    assert(engine1.evaluate_particle(particles,sim,tol,sc) === Seq(true, true, true, true))
+    assert(engine1.evaluate_particle(particles, sim, tol, sc) === Seq(true, true, true, true))
 
   }
   test("Particle is not accepted") {
 
-    var tol=0.2;
-    var sim=100;
-    var particles= List(
-        Vectors.dense(2.0,2.0),
-        Vectors.dense(3.0,1.0),
-        Vectors.dense(4.0,3.0),
-        Vectors.dense(5.0,9.0))
-	
-    assert(engine1.evaluate_particle(particles,sim,tol,sc) === List(false, false, false, false))
+    var tol = 0.2;
+    var sim = 100;
+    var particles = List(
+      Vectors.dense(2.0, 2.0),
+      Vectors.dense(3.0, 1.0),
+      Vectors.dense(4.0, 3.0),
+      Vectors.dense(5.0, 9.0))
+
+    assert(engine1.evaluate_particle(particles, sim, tol, sc) === List(false, false, false, false))
 
   }
 }

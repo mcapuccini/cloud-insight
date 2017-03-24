@@ -1,26 +1,16 @@
 package uu.se.it.cinsight
 
-import sys.process._
-import scala.annotation.elidable
-import scala.annotation.elidable.ASSERTION
 import scala.collection.mutable.HashMap
 import scala.math.ceil
 import scala.math.log
 import scala.math.pow
 import scala.math.sqrt
 import scala.util.Random
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
-import org.apache.hadoop.io.LongWritable
-import org.apache.hadoop.io.Text
-import org.apache.hadoop.mapred.TextInputFormat
-import org.apache.hadoop.io.{MapWritable, Text}
-import se.uu.it.easymr.EasyMapReduce
-import java.io.PrintWriter
-import scopt.OptionParser
-import se.uu.it.easymr.EasyMapParams
 
+import org.apache.spark.SparkContext
+import org.apache.spark.mllib.linalg.Vector
+
+import se.uu.it.easymr.EasyMapReduce
 
 /**
  * Main engine
@@ -74,7 +64,7 @@ class CloudInsight(
     }
   }
 
-   /**
+  /**
    * Evaluate particle using the sequential solver
    *
    * @param particles List of Vectors of particles
@@ -82,20 +72,20 @@ class CloudInsight(
    * @param tol tolerance for the acceptance
    * @return was the particle accepted
    */
-  def evaluate_particle(particle: List[Vector], sims: Int, tol: Double, sc: SparkContext) : Seq[Boolean] = {    
-    
-    if (model!="birthdeath") {
+  def evaluate_particle(particle: List[Vector], sims: Int, tol: Double, sc: SparkContext): Seq[Boolean] = {
+
+    if (model != "birthdeath") {
       throw new NotImplementedError
-    } 
-    
+    }
+
     val defaultParallelism =
       sc.getConf.get("spark.default.parallelism", "2").toInt
-      
-    val rdd = sc.parallelize(particle,defaultParallelism)
-    
+
+    val rdd = sc.parallelize(particle, defaultParallelism)
+
     val stringrdd = rdd.map(_.toJson)
-    
-    var cmd=""
+
+    var cmd = ""
 
     // The serial solver will by default read the particle list from /input and write it back to /output
     // This is how the serial shell call looks like:
@@ -112,7 +102,7 @@ class CloudInsight(
             " -t " + tol.toString())
 
     particles.getRDD.collect().map { boolStr =>
-      if(boolStr == "1") {
+      if (boolStr == "1") {
         true
       } else {
         false
