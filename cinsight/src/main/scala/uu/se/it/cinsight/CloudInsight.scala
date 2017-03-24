@@ -104,7 +104,7 @@ class CloudInsight(
 
     val particles = new EasyMapReduce(stringrdd)
       .mapPartitions(
-        imageName = "cloud-init",
+        imageName = "insight-particle-evaluator",
         command =
           "./INSIGHT/INSIGHTv3" +
             " --problem_file ./example_data/BirthDeath/problem_birthdeath.xml" +
