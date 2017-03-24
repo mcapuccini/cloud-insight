@@ -106,12 +106,18 @@ class CloudInsight(
       .mapPartitions(
         imageName = "insight-particle-evaluator",
         command =
-          "./INSIGHT/INSIGHTv3" +
-            " --problem_file ./example_data/BirthDeath/problem_birthdeath.xml" +
+          "/opt/INSIGHT/bin/INSIGHTv3" +
+            " --problem_file /var/example_data/BirthDeath/problem_birthdeath.xml" +
             " -N " + sims.toString +
             " -t " + tol.toString())
 
-    particles.getRDD.collect().map(_.toBoolean)
+    particles.getRDD.collect().map { boolStr =>
+      if(boolStr == "1") {
+        true
+      } else {
+        false
+      }
+    }
 
   }
 
