@@ -24,7 +24,7 @@ import se.uu.it.easymr.EasyMapReduce
  * @param data flow cytometry data set (sequence of pairs (time, cytometry data))
  */
 class CloudInsight(
-    val prior: HashMap[String, (Double, Double)],
+    val prior: List[(Double, Double)],
     val beta: Double,
     val U: Int,
     val epsilon: Seq[Double],
@@ -38,7 +38,7 @@ class CloudInsight(
       / (2 * pow(eps - sqrt(-log(alpha / 2) / (2 * M)), 2))).toInt)
 
   var t = 1
-  var particles = List[List[(HashMap[String, Double], Double)]]()
+  var particles = List[List[(List[Double], Double)]]()
 
   /**
    * Samples one candidate parameter point according to prior distribution
@@ -46,21 +46,19 @@ class CloudInsight(
    *
    * @return a new parameter point
    */
-  def sample_candidate(): HashMap[String, Double] = {
+  def sample_candidate(): List[Double] = {
     t match {
       case 1 => {
-        for ((parameter, bounds) <- prior) yield (parameter, Random.nextDouble * (bounds._2 - bounds._1) + bounds._1)
+        for (bounds <- prior) yield Random.nextDouble * (bounds._2 - bounds._1) + bounds._1
       }
       case _ => {
         for (
-          (parameter, value) <- particles.apply(t - 2).scanLeft((HashMap[String, Double](), 0.0))(
+          value <- particles.apply(t - 2).scanLeft((List[Double](), 0.0))(
             (p1, p2) => (p2._1, p1._2 + p2._2))
             .map({ case (p, w) => (p, w / particles.apply(t - 2).map(_._2).sum) })
             .filter(_._2 > Random.nextDouble).head._1
-        ) yield (parameter,
-          value * (Random.nextDouble * 2 * epsilon.apply(t - 1) + 1 - epsilon.apply(t - 1)))
+        ) yield value * (Random.nextDouble * 2 * epsilon.apply(t - 1) + 1 - epsilon.apply(t - 1))
       }
-
     }
   }
 

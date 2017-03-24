@@ -19,8 +19,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
 
   before {
     engine1 = new CloudInsight(
-      HashMap[String, (Double, Double)]("alpha" -> (1.0, 2.0),
-        "beta" -> (10.0, 15.0)),
+      List[(Double, Double)]((1.0, 2.0), (10.0, 15.0)),
       0.05,
       10,
       List(0.1, 0.09, 0.06, 0.04),
@@ -30,8 +29,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
         (3.0, List.fill(1500)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)))
 
     engine2 = new CloudInsight(
-      HashMap[String, (Double, Double)]("alpha" -> (1.0, 2.0),
-        "beta" -> (10.0, 15.0)),
+      List[(Double, Double)]((1.0, 2.0), (10.0, 15.0)),
       0.05,
       10,
       List(0.1, 0.0),
@@ -68,19 +66,19 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
     engine2.particles = List(
       for (i <- List.range(0, engine2.U)) yield (engine2.sample_candidate(), 1.0))
     for (particle <- engine2.particles.head) {
-      assert(particle._1.apply("alpha") <= 2.0 && particle._1.apply("alpha") >= 1.0)
-      assert(particle._1.apply("beta") <= 15.0 && particle._1.apply("beta") >= 10.0)
+      assert(particle._1.apply(0) <= 2.0 && particle._1.apply(0) >= 1.0)
+      assert(particle._1.apply(1) <= 15.0 && particle._1.apply(1) >= 10.0)
     }
 
     engine2.particles = List(
-      for (i <- List.range(0, engine2.U)) yield if (i == 5) (HashMap[String, Double]("alpha" -> 1.0), 1.0)
-      else (HashMap[String, Double]("alpha" -> 2.0), 0.0))
+      for (i <- List.range(0, engine2.U)) yield if (i == 5) (List[Double](1.0), 1.0)
+      else (List[Double](2.0), 0.0))
     engine2.t += 1
     engine2.particles :+= {
       for (i <- List.range(0, engine2.U)) yield (engine2.sample_candidate(), 1.0)
     }
     for (particle <- engine2.particles.tail.head) {
-      assert(particle._1.apply("alpha") === 1.0)
+      assert(particle._1.apply(0) === 1.0)
     }
 
   }
