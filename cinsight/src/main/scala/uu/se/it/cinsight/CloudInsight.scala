@@ -53,11 +53,11 @@ class CloudInsight(
       }
       case _ => {
         for (
-          value <- particles.apply(t - 2).scanLeft((List[Double](), 0.0))(
+          value <- particles(t - 2).scanLeft((List[Double](), 0.0))(
             (p1, p2) => (p2._1, p1._2 + p2._2))
-            .map({ case (p, w) => (p, w / particles.apply(t - 2).map(_._2).sum) })
+            .map({ case (p, w) => (p, w / particles(t - 2).map(_._2).sum) })
             .filter(_._2 > Random.nextDouble).head._1
-        ) yield value * (Random.nextDouble * 2 * epsilon.apply(t - 1) + 1 - epsilon.apply(t - 1))
+        ) yield value * (Random.nextDouble * 2 * epsilon(t - 1) + 1 - epsilon(t - 1))
       }
     }
   }

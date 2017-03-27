@@ -73,12 +73,13 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
     engine2.particles = List(
       for (i <- List.range(0, engine2.U)) yield if (i == 5) (List[Double](1.0), 1.0)
       else (List[Double](2.0), 0.0))
-    engine2.t += 1
+    engine2.particles ++= engine2.particles
+    engine2.t += 2
     engine2.particles :+= {
       for (i <- List.range(0, engine2.U)) yield (engine2.sample_candidate(), 1.0)
     }
-    for (particle <- engine2.particles.tail.head) {
-      assert(particle._1.apply(0) === 1.0)
+    for (particle <- engine2.particles(2)) {
+      assert(particle._1(0) === 1.0)
     }
 
   }
