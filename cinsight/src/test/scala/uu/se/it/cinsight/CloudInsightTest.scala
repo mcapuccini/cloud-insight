@@ -26,17 +26,19 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
       "birthdeath",
       List((1.0, List.fill(1000)(List(0.0, 1.0, 2.0, 1.0, 0.5)).flatten),
         (2.0, List.fill(1000)(List(10.0, 11.0, 10.0, 12.0, 11.1)).flatten),
-        (3.0, List.fill(1500)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)))
+        (3.0, List.fill(1500)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)),
+      sc)
 
     engine2 = new CloudInsight(
       List[(Double, Double)]((1.0, 2.0), (10.0, 15.0)),
       0.05,
       10,
-      List(0.1, 0.0),
+      List(0.1, 0.1, 0.0),
       "birthdeath",
       List((1.0, List.fill(1000)(List(0.0, 1.0, 2.0, 1.0, 0.5)).flatten),
         (2.0, List.fill(1000)(List(10.0, 11.0, 10.0, 12.0, 11.1)).flatten),
-        (3.0, List.fill(1500)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)))
+        (3.0, List.fill(1500)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)),
+      sc)
   }
   test("Engine construction") {
     assert(engine1.alpha === 1 - sqrt(1 - 0.05))
@@ -82,6 +84,16 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
       assert(particle._1(0) === 1.0)
     }
 
+  }
+  test("Weights are computed properly"){
+    assert(engine2.compute_weight(List(1.0, 1.0))===1.0)
+    assert(engine2.compute_weight(List(0.0, 0.0))===1.0)
+
+    engine2.particles = List(
+      for (i <- List.range(0, engine2.U)) yield (List(1.5, 12.5), 1.0))
+    engine2.t=2
+    assert((engine2.compute_weight(List(1.5, 12.5))-1.0/(5*10/(1.5*0.2*12.5*0.2))).abs <= 0.0000001)
+    assert(engine2.compute_weight(List(0.0, 0.0))===0.0)
   }
   test("Particle is accepted") {
 

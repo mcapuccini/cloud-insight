@@ -9,6 +9,7 @@ import scala.util.Random
 
 import org.apache.spark.SparkContext
 import org.apache.spark.mllib.linalg.Vector
+import org.apache.spark.mllib.linalg.Vectors
 
 import se.uu.it.easymr.EasyMapReduce
 
@@ -29,7 +30,9 @@ class CloudInsight(
     val U: Int,
     val epsilon: Seq[Double],
     val model: String,
-    val data: Seq[(Double, Iterable[Double])]) {
+    val data: Seq[(Double, Iterable[Double])],
+    val sc: SparkContext
+    ) {
   val alpha = 1 - sqrt(1 - beta)
   val T = epsilon.length
   val M = (for ((time, values) <- data) yield values.size).min
@@ -39,6 +42,12 @@ class CloudInsight(
 
   var t = 1
   var particles = List[List[(List[Double], Double)]]()
+
+  def perturbation_distribution(theta: List[Double], theta_star: List[Double], eps: Double): Double = {
+    return (for ((value, i) <- theta.zipWithIndex) yield
+        if (theta_star(i)*(1-eps) <= value && value <= theta_star(i)*(1+eps))
+        1.0/(theta_star(i)*(1+eps)-theta_star(i)*(1-eps)).abs else 0.0).product
+  }
 
   /**
    * Samples one candidate parameter point according to prior distribution
@@ -60,6 +69,22 @@ class CloudInsight(
         ) yield value * (Random.nextDouble * 2 * epsilon(t - 1) + 1 - epsilon(t - 1))
       }
     }
+  }
+
+  /**
+   * Compute the weight of the given particle
+   *
+   * @param particle particle whose weight must be computed
+   */
+  def compute_weight(particle: List[Double]): Double = {
+      var weight = if (t==1) 1.0 else (for ((value, i) <- particle.zipWithIndex) yield
+            if (prior(i)._1 <= value && value <= prior(i)._2)
+            1.0/(prior(i)._2 - prior(i)._1) else 0.0).product
+
+      return if (t>1 && weight>0.0) weight/
+        (for ((old_particle, old_weight) <- particles(t-2)) yield
+            old_weight*perturbation_distribution(particle, old_particle, epsilon(t-1))).sum
+        else weight
   }
 
   /**
@@ -146,7 +171,20 @@ class CloudInsight(
    *
    * @return sampled posterior distribution of the parameter space
    */
-  def run(): Seq[Iterable[HashMap[String, Double]]] = {
-    throw new NotImplementedError
+  def run(): Seq[Iterable[(Seq[Double], Double)]] = {
+    while( t < T ){
+      var accepted_particles = List[List[Double]]()
+      while(accepted_particles.length < U){
+          var batch = (for (u <- 1 to U) yield Vectors.dense(sample_candidate().toArray)).toList
+          var is_accepted = evaluate_particle(batch, S(t), epsilon(t), sc)
+          accepted_particles ++= batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList)
+      }
+      accepted_particles = accepted_particles.take(U)
+      //compute weights
+      particles ++= List(for (particle <- accepted_particles) yield
+            (particle, compute_weight(particle)))
+      t += 1
+    }
+    return particles
   }
 }
