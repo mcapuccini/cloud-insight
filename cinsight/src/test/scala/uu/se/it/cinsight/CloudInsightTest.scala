@@ -1,7 +1,6 @@
 package uu.se.it.cinsight
 
 import scala.collection.immutable.List
-import scala.collection.mutable.HashMap
 import scala.math.sqrt
 
 import org.apache.spark.SharedSparkContext
@@ -85,15 +84,15 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
     }
 
   }
-  test("Weights are computed properly"){
-    assert(engine2.compute_weight(List(1.0, 1.0))===1.0)
-    assert(engine2.compute_weight(List(0.0, 0.0))===1.0)
+  test("Weights are computed properly") {
+    assert(engine2.compute_weight(List(1.0, 1.0)) === 1.0)
+    assert(engine2.compute_weight(List(0.0, 0.0)) === 1.0)
 
     engine2.particles = List(
       for (i <- List.range(0, engine2.U)) yield (List(1.5, 12.5), 1.0))
-    engine2.t=2
-    assert((engine2.compute_weight(List(1.5, 12.5))-1.0/(5*10/(1.5*0.2*12.5*0.2))).abs <= 0.0000001)
-    assert(engine2.compute_weight(List(0.0, 0.0))===0.0)
+    engine2.t = 2
+    assert((engine2.compute_weight(List(1.5, 12.5)) - 1.0 / (5 * 10 / (1.5 * 0.2 * 12.5 * 0.2))).abs <= 0.0000001)
+    assert(engine2.compute_weight(List(0.0, 0.0)) === 0.0)
   }
   test("Particle is accepted") {
 
