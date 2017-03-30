@@ -1,0 +1,48 @@
+<problem>
+	<model>
+		<model_code>8</model_code>
+		<!-- Model code 8 is BIRTHDEATH-->
+		<measuredspecies>
+			<measurement>
+				<index>0</index>
+			</measurement>
+		</measuredspecies>
+		<priors>
+			<prior> 
+				<index>0</index> <lb>50</lb> <ub>200</ub>
+				<!-- mu for fluorescence -->
+			</prior>
+			<prior> 
+				<index>1</index> <lb>10</lb> <ub>100</ub>
+				<!-- sigma for fluorescence -->
+			</prior>
+			<prior>
+				<index>2</index> <lb>1.0e-4</lb> <ub>40</ub>
+				<!-- Birth rate -->
+			</prior>
+			<prior>
+				<index>3</index> <lb>1.0e-4</lb> <ub>40</ub>
+				<!-- Death rate -->
+			</prior>
+		</priors>
+	</model>
+	<data mode = 'text' one_file = 'yes'>
+		<samples>80000</samples>
+		<datafile>BirthDeathFL.txt</datafile>
+		<timept>
+			<index>0</index> <time>0.0</time>
+		</timept>
+		<timept>
+			<index>1</index> <time>0.5</time>
+		</timept>
+		<timept>
+			<index>2</index> <time>1.0</time>
+		</timept>
+		<timept>
+			<index>3</index> <time>2.0</time>
+		</timept>
+		<timept>
+			<index>4</index> <time>10.0</time>
+		</timept>
+	</data>
+</problem>
