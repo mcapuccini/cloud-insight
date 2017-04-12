@@ -11,7 +11,7 @@ before_install:
 - cd cinsight
 
 after_success:
-  provider: script
-  script: scripts/deploy.sh
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - docker push mcapuccini/insight-particle-evaluator
   on:
     branch: master
