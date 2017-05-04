@@ -91,7 +91,7 @@ class CloudInsight(
    * @param tol tolerance for the acceptance
    * @return was the particle accepted
    */
-  def evaluate_particle(particle: List[Vector], sims: Int, tol: Double, sc: SparkContext): Seq[Boolean] = {
+  def evaluate_particle(particle: List[Vector], sims: Int, tol: Double): Seq[Boolean] = {
 
     if (model != "birthdeath") {
       throw new NotImplementedError
@@ -172,7 +172,7 @@ class CloudInsight(
       var accepted_particles = List[List[Double]]()
       while (accepted_particles.length < U) {
         var batch = (for (u <- 1 to U) yield Vectors.dense(sample_candidate().toArray)).toList
-        var is_accepted = evaluate_particle(batch, S(t), epsilon(t), sc)
+        var is_accepted = evaluate_particle(batch, S(t), epsilon(t))
         accepted_particles ++= batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList)
       }
       accepted_particles = accepted_particles.take(U)

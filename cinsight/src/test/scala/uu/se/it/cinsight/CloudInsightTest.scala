@@ -104,7 +104,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
       Vectors.dense(4.0, 3.0),
       Vectors.dense(5.0, 9.0))
 
-    assert(engine1.evaluate_particle(particles, sim, tol, sc) === Seq(true, true, true, true))
+    assert(engine1.evaluate_particle(particles, sim, tol) === Seq(true, true, true, true))
 
   }
   test("Particle is not accepted") {
@@ -117,7 +117,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
       Vectors.dense(4.0, 3.0),
       Vectors.dense(5.0, 9.0))
 
-    assert(engine1.evaluate_particle(particles, sim, tol, sc) === List(false, false, false, false))
+    assert(engine1.evaluate_particle(particles, sim, tol) === List(false, false, false, false))
 
   }
 }
