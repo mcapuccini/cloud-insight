@@ -2,7 +2,6 @@ package se.uu.it.cinsight
 
 import scala.collection.immutable.List
 import scala.math.sqrt
-import se.uu.it.cinsight.CloudInsight;
 
 import org.apache.spark.SharedSparkContext
 import org.apache.spark.mllib.linalg.Vectors
