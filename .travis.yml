@@ -10,6 +10,8 @@ before_install:
 - docker build -t mcapuccini/insight-particle-evaluator ./container
 - cd cinsight
 
+install: travis_wait mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+
 after_success:
 - >
     if [ $TRAVIS_BRANCH = 'master' ] && [ $TRAVIS_PULL_REQUEST = 'false' ]; then
