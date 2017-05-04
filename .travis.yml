@@ -10,10 +10,11 @@ before_install:
 - docker build -t mcapuccini/insight-particle-evaluator ./container
 - cd cinsight
 
+install: true
+
 after_success:
 - >
     if [ $TRAVIS_BRANCH = 'master' ] && [ $TRAVIS_PULL_REQUEST = 'false' ]; then
       docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
       docker push mcapuccini/insight-particle-evaluator
-      mvn deploy --settings travis-config.xml -DskipTests=true -B
     fi
