@@ -1,4 +1,4 @@
-package uu.se.it.cinsight
+package se.uu.it.cinsight
 
 import scala.collection.mutable.HashMap
 import scala.math.ceil
