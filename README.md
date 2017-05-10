@@ -22,7 +22,7 @@ cd cloud-insight
 cd cinsight && mvn clean package
 ```
 
-## Run locally
+## Run in local mode
 1) Download Apache Spark, extract it to a directory and set ``export SPARK_HOME=/your/spark/directory``
 2) Run the analysis locally
 ```
