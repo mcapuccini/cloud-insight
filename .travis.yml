@@ -7,8 +7,8 @@ services:
 - docker
 
 before_install:
- - docker build -t mcapuccini/insight-particle-evaluator ./container
- - cd cinsight
+- docker build -t mcapuccini/insight-particle-evaluator ./container
+- cd cinsight
 
 install: true
 
