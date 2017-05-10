@@ -1,16 +1,38 @@
 language: java
 
 env:
-- TMPDIR=/tmp
+  global:
+  - TMPDIR=/tmp
+  - SPARK_VERSION=2.1.0
+  - HADOOP_VERSION=2.7
 
 services:
 - docker
 
-before_install:
-- docker build -t mcapuccini/insight-particle-evaluator ./container
-- cd cinsight
+install:
+# Install and start TheSparkBox
+- curl -Lo tsb https://raw.githubusercontent.com/mcapuccini/TheSparkBox/master/bin/tsb
+- chmod +x tsb
+- sudo mv tsb /usr/local/bin/
+- tsb up -d
+- sleep 60 # give some to the Spark cluster to synch
+# Install Spark 
+- curl -Lo spark.tgz http://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+- tar xzvf spark.tgz
+- sudo ln -s spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/bin/spark-submit /usr/local/bin/
 
-install: true
+script:
+# Build insight-particle-evaluator
+- docker build -t mcapuccini/insight-particle-evaluator ./container
+# Build Spark Jar
+- cd cinsight
+- mvn clean package
+# Test Main class
+- >
+    spark-submit
+      --class se.uu.it.cinsight.Main
+      --master spark://localhost:7077
+      target/cinsight-0.1.0-SNAPSHOT-jar-with-dependencies.jar
 
 after_success:
 - >
