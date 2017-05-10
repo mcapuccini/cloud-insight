@@ -20,7 +20,7 @@ script:
 - docker build -t mcapuccini/insight-particle-evaluator ./container
 # Build Spark Jar
 - cd cinsight
-- mvn clean package
+- mvn clean package -B -V -q
 # Test Main class
 - >
     spark-submit
