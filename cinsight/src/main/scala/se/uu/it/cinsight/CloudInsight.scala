@@ -170,22 +170,22 @@ class CloudInsight(
    * @return sampled posterior distribution of the parameter space
    */
   def run(): Seq[Iterable[(Seq[Double], Double)]] = {
-    var count_accepted_particles = 0
-    var count_rejected_particles = 0
-    while (t < T) {
+    while (t <= T) {
+      var count_accepted_particles = 0
+      var count_rejected_particles = 0
       var accepted_particles = List[List[Double]]()
       while (accepted_particles.length < U) {
         var batch = (for (u <- 1 to U) yield Vectors.dense(sample_candidate().toArray)).toList
-        var is_accepted = evaluate_particle(batch, S(t), epsilon(t))
+        var is_accepted = evaluate_particle(batch, S(t-1), epsilon(t-1))
         accepted_particles ++= batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList)
         count_accepted_particles = accepted_particles.length
         count_rejected_particles += U - batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList).length
+        logg.info("t: "+t.toString()+" accepted_particles_length: "+accepted_particles.length.toString()+" acceptance_rate: "+(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles)).toString())
       }
       accepted_particles = accepted_particles.take(U)
       //compute weights
       particles ++= List(for (particle <- accepted_particles) yield (particle, compute_weight(particle)))
       t += 1
-      logg.info("t: "+t.toString()+" acceptance_rate:"(count_accepted_particles/(count_accepted_particles+count_rejected_particles)).toString())
     }
     return particles
   }
