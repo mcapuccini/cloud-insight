@@ -37,6 +37,18 @@ object Main {
     val sc = new SparkContext(conf)
 
     // Experiment goes here
+    var engine = new CloudInsight(
+      List[(Double, Double)]((0.0, 10.0), (0.0, 2.0)), // prior (birth, death)
+      0.05, // beta
+      10, // U
+      List(0.7,0.6,0.5), // epsilon
+      "birthdeath",
+      List((1.0, List.fill(8000)(List(0.0, 1.0, 2.0, 1.0, 0.5)).flatten),
+        (2.0, List.fill(8000)(List(10.0, 11.0, 10.0, 12.0, 11.1)).flatten),
+        (3.0, List.fill(8000)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)),
+      sc)
+
+    engine.run()
 
     sc.stop
 
