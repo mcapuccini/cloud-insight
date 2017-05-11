@@ -10,6 +10,7 @@ import scala.util.Random
 import org.apache.spark.SparkContext
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.mllib.linalg.Vectors
+import org.apache.log4j.Logger
 
 import se.uu.it.easymr.EasyMapReduce
 
@@ -41,6 +42,7 @@ class CloudInsight(
 
   var t = 1
   var particles = List[List[(List[Double], Double)]]()
+  @transient lazy val logg = Logger.getLogger(getClass.getName)
 
   def perturbation_distribution(theta: List[Double], theta_star: List[Double], eps: Double): Double = {
     return (for ((value, i) <- theta.zipWithIndex) yield if (theta_star(i) * (1 - eps) <= value && value <= theta_star(i) * (1 + eps))
@@ -168,17 +170,22 @@ class CloudInsight(
    * @return sampled posterior distribution of the parameter space
    */
   def run(): Seq[Iterable[(Seq[Double], Double)]] = {
+    var count_accepted_particles = 0
+    var count_rejected_particles = 0
     while (t < T) {
       var accepted_particles = List[List[Double]]()
       while (accepted_particles.length < U) {
         var batch = (for (u <- 1 to U) yield Vectors.dense(sample_candidate().toArray)).toList
         var is_accepted = evaluate_particle(batch, S(t), epsilon(t))
         accepted_particles ++= batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList)
+        count_accepted_particles = accepted_particles.length
+        count_rejected_particles += U - batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList).length
       }
       accepted_particles = accepted_particles.take(U)
       //compute weights
       particles ++= List(for (particle <- accepted_particles) yield (particle, compute_weight(particle)))
       t += 1
+      logg.info("t: "+t.toString()+" acceptance_rate:"(count_accepted_particles/(count_accepted_particles+count_rejected_particles)).toString())
     }
     return particles
   }
