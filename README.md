@@ -45,4 +45,4 @@ $SPARK_HOME/bin/spark-submit \
 
 ## Run from Eclipse (Scala IDE)
 1) Right click on Main.scala > Run as > Scala application. Let it fail.
-2) Right click on Main.scala > Run configurations > Arguments > type `--master local` in the program arguments field. Apply and run. 
+2) Right click on Main.scala > Run as > Run configurations > Arguments > type `--master local` in the program arguments field. Apply and run. 
