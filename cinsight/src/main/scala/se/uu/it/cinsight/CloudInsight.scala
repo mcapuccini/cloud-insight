@@ -175,11 +175,15 @@ class CloudInsight(
       var count_rejected_particles = 0
       var accepted_particles = List[List[Double]]()
       while (accepted_particles.length < U) {
-        var batch = (for (u <- 1 to U) yield Vectors.dense(sample_candidate().toArray)).toList
+        var batch = (for (u <- 1 to
+            (if(count_accepted_particles+count_rejected_particles !=0)
+              ((U-accepted_particles.length)/(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles))).toInt
+              else U))
+          yield Vectors.dense(sample_candidate().toArray)).toList
         var is_accepted = evaluate_particle(batch, S(t-1), epsilon(t-1))
         accepted_particles ++= batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList)
         count_accepted_particles = accepted_particles.length
-        count_rejected_particles += U - batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList).length
+        count_rejected_particles += batch.length - batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList).length
         logg.info("t: "+t.toString()+" accepted_particles_length: "+accepted_particles.length.toString()+" acceptance_rate: "+(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles)).toString())
       }
       accepted_particles = accepted_particles.take(U)
