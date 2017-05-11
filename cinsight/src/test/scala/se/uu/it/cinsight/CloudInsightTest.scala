@@ -23,9 +23,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
       10,
       List(0.1, 0.09, 0.06, 0.04),
       "birthdeath",
-      List((1.0, List.fill(1000)(List(0.0, 1.0, 2.0, 1.0, 0.5)).flatten),
-        (2.0, List.fill(1000)(List(10.0, 11.0, 10.0, 12.0, 11.1)).flatten),
-        (3.0, List.fill(1500)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)),
+      5000,
       sc)
 
     engine2 = new CloudInsight(
@@ -34,34 +32,15 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
       10,
       List(0.1, 0.1, 0.0),
       "birthdeath",
-      List((1.0, List.fill(1000)(List(0.0, 1.0, 2.0, 1.0, 0.5)).flatten),
-        (2.0, List.fill(1000)(List(10.0, 11.0, 10.0, 12.0, 11.1)).flatten),
-        (3.0, List.fill(1500)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)),
+      5000,
       sc)
   }
   test("Engine construction") {
     assert(engine1.alpha === 1 - sqrt(1 - 0.05))
     assert(engine1.T === 4)
-    assert(engine1.M === 5000)
     assert(engine1.S === List(350, 458, 1430, 5991))
 
     assert(engine1.t === 1)
-  }
-  test("Basic Kolmogorov distances are measured properly") {
-    assert(engine1.kolmogorov_distance(List(List(0.0)), List(List(10.0))) === 1.0)
-    assert(engine1.kolmogorov_distance(List(List(-10.0)), List(List(10.0))) === 1.0)
-
-    assert(engine1.kolmogorov_distance(List(List(0.0)), List(List(0.0))) === 0.0)
-    assert(engine1.kolmogorov_distance(List(List(1.0)), List(List(1.0))) === 0.0)
-    assert(engine1.kolmogorov_distance(List(List(-1.0)), List(List(-1.0))) === 0.0)
-    assert(engine1.kolmogorov_distance(List(List(1.0, 0.0, -1)), List(List(0.0, -1, 1))) === 0.0)
-    assert(engine1.kolmogorov_distance(List(List(1.0, -1)), List(List(0.0))) === 0.5)
-    assert(engine1.kolmogorov_distance(List(List(1.0, 0.0)), List(List(-1.0))) === 1.0)
-
-    assert(engine1.kolmogorov_distance(List(List(0.0), List(1.0)), List(List(10.0), List(1.0))) === 1.0)
-    assert(engine1.kolmogorov_distance(List(List(0.0), List(1.0)), List(List(10.0), List(-1.0))) === 1.0)
-
-    assert(engine1.kolmogorov_distance(List(List(0.0), List(1.0)), List(List(0.0), List(1.0))) === 0.0)
   }
   test("New candidates are sampled properly") {
     engine2.particles = List(
