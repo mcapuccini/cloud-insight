@@ -170,11 +170,12 @@ class CloudInsight(
    * @return sampled posterior distribution of the parameter space
    */
   def run(): Seq[Iterable[(Seq[Double], Double)]] = {
-    while (t <= T) {
+    var exit_criterion = false
+    while (t <= T && !exit_criterion) {
       var count_accepted_particles = 0
-      var count_rejected_particles = 0
+      var count_rejected_particles = 0     
       var accepted_particles = List[List[Double]]()
-      while (accepted_particles.length < U) {
+      while (accepted_particles.length < U && !exit_criterion) {
         var batch = (for (u <- 1 to
             (if(count_accepted_particles+count_rejected_particles !=0)
               ((U-accepted_particles.length)/(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles))).toInt
@@ -185,6 +186,8 @@ class CloudInsight(
         count_accepted_particles = accepted_particles.length
         count_rejected_particles += batch.length - batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList).length
         logg.info("t: "+t.toString()+" accepted_particles_length: "+accepted_particles.length.toString()+" acceptance_rate: "+(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles)).toString())
+        if(accepted_particles.length==0)
+          exit_criterion=true;
       }
       accepted_particles = accepted_particles.take(U)
       //compute weights
