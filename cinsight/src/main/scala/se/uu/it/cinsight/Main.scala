@@ -3,6 +3,10 @@ package se.uu.it.cinsight
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import scopt.OptionParser
+import java.io._
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.jackson.JsonMethods._
 
 object Main {
 
@@ -41,14 +45,21 @@ object Main {
       List[(Double, Double)]((0.0, 10.0), (0.0, 2.0)), // prior (birth, death)
       0.05, // beta
       10, // U
-      List(0.7,0.6,0.5), // epsilon
+      List(0.7, 0.6, 0.5), // epsilon
       "birthdeath",
-      List((1.0, List.fill(8000)(List(0.0, 1.0, 2.0, 1.0, 0.5)).flatten),
-        (2.0, List.fill(8000)(List(10.0, 11.0, 10.0, 12.0, 11.1)).flatten),
-        (3.0, List.fill(8000)(List(20.0, 21.0, 30.0, 52.0, 12.3)).flatten)),
+      8000,
       sc)
 
-    engine.run()
+    val particles = engine.run()
+    val particles_writer = new PrintWriter(new File("particles.json"))
+    particles_writer.write(compact(render(
+        (for (batch <- particles) yield (for (particle <- batch) yield particle._1.toList).toList).toList)))
+    particles_writer.close
+    
+    val eps_writer = new PrintWriter(new File("epsilon.json"))
+    eps_writer.write(compact(render(
+        engine.epsilon)))
+    eps_writer.close
 
     sc.stop
 

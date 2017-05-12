@@ -31,11 +31,10 @@ class CloudInsight(
     val U: Int,
     val epsilon: Seq[Double],
     val model: String,
-    val data: Seq[(Double, Iterable[Double])],
+    val M: Int,
     val sc: SparkContext) {
   val alpha = 1 - sqrt(1 - beta)
   val T = epsilon.length
-  val M = (for ((time, values) <- data) yield values.size).min
   val S = for (eps <- epsilon) yield (
     ceil(-log(alpha / 2)
       / (2 * pow(eps - sqrt(-log(alpha / 2) / (2 * M)), 2))).toInt)
@@ -130,38 +129,6 @@ class CloudInsight(
       }
     }
 
-  }
-
-  /**
-   * Performs sc simulations with given parameter theta
-   *
-   * @param theta parameter set to use for these simulations
-   * @param sc number of simulations to perform
-   * @return simulated flow cytometry data according to theta
-   */
-  def run_simulation(theta: HashMap[String, Double], sc: Int): Seq[Iterable[Double]] = {
-    throw new NotImplementedError
-  }
-
-  /**
-   * Measures Kolmogorov distance between two data sets
-   *
-   * Each datasets consists of a list of sets of values (one set per
-   * timepoint). x and y should have the same length.
-   *
-   * @param x first dataset
-   * @param y second dataset
-   * @return the distance between the two datasets
-   */
-  def kolmogorov_distance(x: Seq[Iterable[Double]], y: Seq[Iterable[Double]]): Double = {
-    assert(x.length == y.length)
-    x.zip(y).map({
-      case (a, b) =>
-        (a.map((_, b.size)) ++ b.map((_, -a.size))) // Merge experimental and simulated datasets
-          .groupBy(_._1).map({ case (k, v) => (k, v.map(_._2).sum) }).toList // Aggregate duplicates
-          .sortBy(_._1).map(_._2).scanLeft(0.0)(_ + _) // Compute cumulative sum
-          .map(_.abs).max / (a.size * b.size)
-    }).max
   }
 
   /**
