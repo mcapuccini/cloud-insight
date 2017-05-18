@@ -152,7 +152,7 @@ class CloudInsight(
         accepted_particles ++= batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList)
         count_accepted_particles = accepted_particles.length
         count_rejected_particles += batch.length - batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList).length
-        logg.info("t: "+t.toString()+" accepted_particles_length: "+accepted_particles.length.toString()+" acceptance_rate: "+(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles)).toString())
+        logg.info("t: "+t.toString()+" epsilon: "+epsilon(t-1)+" S: "+S(t-1)+" accepted_particles_length: "+accepted_particles.length.toString()+" acceptance_rate: "+(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles)).toString())
         if(accepted_particles.length==0)
           exit_criterion=true;
       }
