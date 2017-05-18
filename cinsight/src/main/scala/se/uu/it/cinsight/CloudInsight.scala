@@ -145,7 +145,7 @@ class CloudInsight(
       while (accepted_particles.length < U && !exit_criterion) {
         var batch = (for (u <- 1 to
             (if(count_accepted_particles+count_rejected_particles !=0)
-              ((U-accepted_particles.length)/(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles))).toInt
+              ((U-accepted_particles.length)*1.15/(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles))).toInt
               else U))
           yield Vectors.dense(sample_candidate().toArray)).toList
         var is_accepted = evaluate_particle(batch, S(t-1), epsilon(t-1))
