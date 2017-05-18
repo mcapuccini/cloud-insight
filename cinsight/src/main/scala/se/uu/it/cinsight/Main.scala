@@ -66,7 +66,7 @@ object Main {
       params.U, // U
       epslist, // epsilon
       "birthdeath",
-      8000,
+      80000,
       sc)
 
     val particles = engine.run()
