@@ -55,6 +55,7 @@ object Main {
     if (params.master != null) {
       conf.setMaster(params.master)
     }
+    conf.setExecutorEnv("TMPDIR", System.getenv("TMPDIR"))
     val sc = new SparkContext(conf)
     
     val epslist = (0 to params.epsilon_n-1).map(params.epsilon_up*math.pow(params.epsilon_coeff, _))
