@@ -10,6 +10,7 @@ import scala.util.Random
 import org.apache.spark.SparkContext
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.mllib.linalg.Vectors
+import org.apache.log4j.Logger
 
 import se.uu.it.easymr.EasyMapReduce
 
@@ -30,17 +31,17 @@ class CloudInsight(
     val U: Int,
     val epsilon: Seq[Double],
     val model: String,
-    val data: Seq[(Double, Iterable[Double])],
+    val M: Int,
     val sc: SparkContext) {
   val alpha = 1 - sqrt(1 - beta)
   val T = epsilon.length
-  val M = (for ((time, values) <- data) yield values.size).min
   val S = for (eps <- epsilon) yield (
     ceil(-log(alpha / 2)
       / (2 * pow(eps - sqrt(-log(alpha / 2) / (2 * M)), 2))).toInt)
 
   var t = 1
   var particles = List[List[(List[Double], Double)]]()
+  @transient lazy val logg = Logger.getLogger(getClass.getName)
 
   def perturbation_distribution(theta: List[Double], theta_star: List[Double], eps: Double): Double = {
     return (for ((value, i) <- theta.zipWithIndex) yield if (theta_star(i) * (1 - eps) <= value && value <= theta_star(i) * (1 + eps))
@@ -131,49 +132,29 @@ class CloudInsight(
   }
 
   /**
-   * Performs sc simulations with given parameter theta
-   *
-   * @param theta parameter set to use for these simulations
-   * @param sc number of simulations to perform
-   * @return simulated flow cytometry data according to theta
-   */
-  def run_simulation(theta: HashMap[String, Double], sc: Int): Seq[Iterable[Double]] = {
-    throw new NotImplementedError
-  }
-
-  /**
-   * Measures Kolmogorov distance between two data sets
-   *
-   * Each datasets consists of a list of sets of values (one set per
-   * timepoint). x and y should have the same length.
-   *
-   * @param x first dataset
-   * @param y second dataset
-   * @return the distance between the two datasets
-   */
-  def kolmogorov_distance(x: Seq[Iterable[Double]], y: Seq[Iterable[Double]]): Double = {
-    assert(x.length == y.length)
-    x.zip(y).map({
-      case (a, b) =>
-        (a.map((_, b.size)) ++ b.map((_, -a.size))) // Merge experimental and simulated datasets
-          .groupBy(_._1).map({ case (k, v) => (k, v.map(_._2).sum) }).toList // Aggregate duplicates
-          .sortBy(_._1).map(_._2).scanLeft(0.0)(_ + _) // Compute cumulative sum
-          .map(_.abs).max / (a.size * b.size)
-    }).max
-  }
-
-  /**
    * Run the INSIGHT algorithm
    *
    * @return sampled posterior distribution of the parameter space
    */
   def run(): Seq[Iterable[(Seq[Double], Double)]] = {
-    while (t < T) {
+    var exit_criterion = false
+    while (t <= T && !exit_criterion) {
+      var count_accepted_particles = 0
+      var count_rejected_particles = 0     
       var accepted_particles = List[List[Double]]()
-      while (accepted_particles.length < U) {
-        var batch = (for (u <- 1 to U) yield Vectors.dense(sample_candidate().toArray)).toList
-        var is_accepted = evaluate_particle(batch, S(t), epsilon(t))
+      while (accepted_particles.length < U && !exit_criterion) {
+        var batch = (for (u <- 1 to
+            (if(count_accepted_particles+count_rejected_particles !=0)
+              ((U-accepted_particles.length)*1.15/(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles))).toInt
+              else U))
+          yield Vectors.dense(sample_candidate().toArray)).toList
+        var is_accepted = evaluate_particle(batch, S(t-1), epsilon(t-1))
         accepted_particles ++= batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList)
+        count_accepted_particles = accepted_particles.length
+        count_rejected_particles += batch.length - batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList).length
+        logg.info("t: "+t.toString()+" epsilon: "+epsilon(t-1)+" S: "+S(t-1)+" accepted_particles_length: "+accepted_particles.length.toString()+" acceptance_rate: "+(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles)).toString())
+        if(accepted_particles.length==0)
+          exit_criterion=true;
       }
       accepted_particles = accepted_particles.take(U)
       //compute weights
