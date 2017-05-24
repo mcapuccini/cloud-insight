@@ -113,7 +113,7 @@ class CloudInsight(
     //cmd.!!
 
     val particles = new EasyMapReduce(stringrdd)
-      .mapPartitions(
+      .map(
         imageName = "mcapuccini/insight-particle-evaluator",
         command =
           "/opt/INSIGHT/bin/INSIGHTv3" +
