@@ -140,11 +140,15 @@ class CloudInsight(
           U
         }
 
-        val particles_t2 = particles(t-2).collect
-
-        val partial_sum = particles_t2.scanLeft((List[Double](), 0.0))(
+        val partial_sum = if(t>1){
+          val particles_t2 = particles(t-2).collect
+          particles_t2.scanLeft((List[Double](), 0.0))(
             (p1, p2) => (p2._1, p1._2 + p2._2))
           .map({ case (p, w) => (p, w / particles(t - 2).map(_._2).sum) }).toList
+        }
+        else{
+          List[(List[Double], Double)]()
+        }
 
         val batch = sc.parallelize(1 to batchSize, defaultParallelism).map { _ =>
           Vectors.dense(sample_candidate(partial_sum).toArray)
@@ -157,7 +161,7 @@ class CloudInsight(
           exit_criterion=true;
         accepted_particles_count = accepted_particles.count
       }
-      val particles_t2 = particles(t-2).collect.toList
+      val particles_t2 = if(t>1) particles(t-2).collect.toList else List[(List[Double], Double)]()
 
       accepted_particles = accepted_particles.zipWithIndex.filter(_._2 < U).map(_._1)
       //compute weights
