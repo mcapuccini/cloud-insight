@@ -33,7 +33,7 @@ class CloudInsight(
     val epsilon: Seq[Double],
     val model: String,
     val M: Int,
-    val sc: SparkContext) {
+    @transient val sc: SparkContext) extends Serializable {
   val alpha = 1 - sqrt(1 - beta)
   val T = epsilon.length
   val S = for (eps <- epsilon) yield (
