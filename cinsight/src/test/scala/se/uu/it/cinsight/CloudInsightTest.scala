@@ -43,35 +43,44 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
     assert(engine1.t === 1)
   }
   test("New candidates are sampled properly") {
+    var partial_sum = List[(List[Double], Double)]()
     engine2.particles = List(
-      for (i <- List.range(0, engine2.U)) yield (engine2.sample_candidate(), 1.0))
-    for (particle <- engine2.particles.head) {
+      sc.parallelize(for (i <- List.range(0, engine2.U)) yield (engine2.sample_candidate(partial_sum), 1.0)))
+    for (particle <- engine2.particles.head.collect) {
       assert(particle._1.apply(0) <= 2.0 && particle._1.apply(0) >= 1.0)
       assert(particle._1.apply(1) <= 15.0 && particle._1.apply(1) >= 10.0)
     }
 
     engine2.particles = List(
-      for (i <- List.range(0, engine2.U)) yield if (i == 5) (List[Double](1.0), 1.0)
-      else (List[Double](2.0), 0.0))
+      sc.parallelize(for (i <- List.range(0, engine2.U)) yield if (i == 5) (List[Double](1.0), 1.0)
+      else (List[Double](2.0), 0.0)))
     engine2.particles ++= engine2.particles
     engine2.t += 2
-    engine2.particles :+= {
-      for (i <- List.range(0, engine2.U)) yield (engine2.sample_candidate(), 1.0)
-    }
-    for (particle <- engine2.particles(2)) {
+    val particles_t2 = engine2.particles(engine2.t - 2).collect.toList
+    partial_sum = particles_t2.scanLeft((List[Double](), 0.0))(
+            (p1, p2) => (p2._1, p1._2 + p2._2))
+          .map({ case (p, w) => (p, w / particles_t2.map(_._2).sum) }).toList
+    engine2.particles :+= sc.parallelize({
+      for (i <- List.range(0, engine2.U)) yield (engine2.sample_candidate(partial_sum), 1.0)
+    })
+    for (particle <- engine2.particles(2).collect) {
       assert(particle._1(0) === 1.0)
     }
 
   }
   test("Weights are computed properly") {
-    assert(engine2.compute_weight(List(1.0, 1.0)) === 1.0)
-    assert(engine2.compute_weight(List(0.0, 0.0)) === 1.0)
+    var old_particles = List[(List[Double], Double)]()
+    assert(engine2.compute_weight(List(1.0, 1.0), old_particles) === 1.0)
+    assert(engine2.compute_weight(List(0.0, 0.0), old_particles) === 1.0)
 
-    engine2.particles = List(
-      for (i <- List.range(0, engine2.U)) yield (List(1.5, 12.5), 1.0))
+    engine2.particles = List(sc.parallelize(
+      for (i <- List.range(0, engine2.U)) yield (List(1.5, 12.5), 1.0)))
     engine2.t = 2
-    assert((engine2.compute_weight(List(1.5, 12.5)) - 1.0 / (5 * 10 / (1.5 * 0.2 * 12.5 * 0.2))).abs <= 0.0000001)
-    assert(engine2.compute_weight(List(0.0, 0.0)) === 0.0)
+
+    old_particles = engine2.particles(engine2.t - 2).collect.toList
+
+    assert((engine2.compute_weight(List(1.5, 12.5), old_particles) - 1.0 / (5 * 10 / (1.5 * 0.2 * 12.5 * 0.2))).abs <= 0.0000001)
+    assert(engine2.compute_weight(List(0.0, 0.0), old_particles) === 0.0)
   }
   test("Particle is accepted") {
 
@@ -83,7 +92,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
       Vectors.dense(4.0, 3.0),
       Vectors.dense(5.0, 9.0))
 
-    assert(engine1.evaluate_particle(particles, sim, tol) === Seq(true, true, true, true))
+    assert(engine1.evaluate_particle(sc.parallelize(particles), sim, tol).collect === Seq(true, true, true, true))
 
   }
   test("Particle is not accepted") {
@@ -96,7 +105,7 @@ class CloudInsightTest extends FunSuite with SharedSparkContext with BeforeAndAf
       Vectors.dense(4.0, 3.0),
       Vectors.dense(5.0, 9.0))
 
-    assert(engine1.evaluate_particle(particles, sim, tol) === List(false, false, false, false))
+    assert(engine1.evaluate_particle(sc.parallelize(particles), sim, tol).collect === List(false, false, false, false))
 
   }
 }
