@@ -13,6 +13,7 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.apache.log4j.Logger
 
 import se.uu.it.easymr.EasyMapReduce
+import org.apache.spark.rdd.RDD
 
 /**
  * Main engine
@@ -40,7 +41,7 @@ class CloudInsight(
       / (2 * pow(eps - sqrt(-log(alpha / 2) / (2 * M)), 2))).toInt)
 
   var t = 1
-  var particles = List[List[(List[Double], Double)]]()
+  var particles = List[RDD[(List[Double], Double)]]()
   @transient lazy val logg = Logger.getLogger(getClass.getName)
 
   def perturbation_distribution(theta: List[Double], theta_star: List[Double], eps: Double): Double = {
@@ -92,26 +93,14 @@ class CloudInsight(
    * @param tol tolerance for the acceptance
    * @return was the particle accepted
    */
-  def evaluate_particle(particle: List[Vector], sims: Int, tol: Double): Seq[Boolean] = {
+  def evaluate_particle(particle: RDD[Vector], sims: Int, tol: Double) = {
 
     if (model != "birthdeath") {
       throw new NotImplementedError
     }
 
-    val defaultParallelism =
-      sc.getConf.get("spark.default.parallelism", "2").toInt
-
-    val rdd = sc.parallelize(particle, defaultParallelism)
-
-    val stringrdd = rdd.map(_.toJson)
-
-    var cmd = ""
-
-    // The serial solver will by default read the particle list from /input and write it back to /output
-    // This is how the serial shell call looks like:
-    //cmd = "../INSIGHT/INSIGHTv3 --problem_file ../example_data/BirthDeath/problem_birthdeath.xml -N "+sc.toString+" -t "+tol.toString();
-    //cmd.!!
-
+    val stringrdd = particle.map(_.toJson)
+    
     val particles = new EasyMapReduce(stringrdd)
       .map(
         imageName = "mcapuccini/insight-particle-evaluator",
@@ -121,7 +110,7 @@ class CloudInsight(
             " -N " + sims.toString +
             " -t " + tol.toString())
 
-    particles.getRDD.collect().map { boolStr =>
+    particles.getRDD.map { boolStr =>
       if (boolStr == "1") {
         true
       } else {
@@ -136,31 +125,39 @@ class CloudInsight(
    *
    * @return sampled posterior distribution of the parameter space
    */
-  def run(): Seq[Iterable[(Seq[Double], Double)]] = {
+  def run() = {
+    
+    // Get default parallelism
+    val defaultParallelism =
+      sc.getConf.get("spark.default.parallelism", "2").toInt
+    
     var exit_criterion = false
     while (t <= T && !exit_criterion) {
-      var count_accepted_particles = 0
-      var count_rejected_particles = 0     
-      var accepted_particles = List[List[Double]]()
-      while (accepted_particles.length < U && !exit_criterion) {
-        var batch = (for (u <- 1 to
-            (if(count_accepted_particles+count_rejected_particles !=0)
-              ((U-accepted_particles.length)*1.15/(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles))).toInt
-              else U))
-          yield Vectors.dense(sample_candidate().toArray)).toList
-        var is_accepted = evaluate_particle(batch, S(t-1), epsilon(t-1))
+      var count_rejected_particles = 0L     
+      var accepted_particles = sc.emptyRDD[List[Double]]
+      var accepted_particles_count = 0L
+      while (accepted_particles_count < U && !exit_criterion) {
+        val batchSize = if(accepted_particles_count+count_rejected_particles !=0) {
+          ((U-accepted_particles_count)*1.15/(1.0*accepted_particles_count/(accepted_particles_count+count_rejected_particles))).toInt
+        } else {
+          U
+        }
+        val batch = sc.parallelize(1 to batchSize, defaultParallelism).map { _ =>
+          Vectors.dense(sample_candidate().toArray)
+        }  
+        var is_accepted = evaluate_particle(batch, S(t-1), epsilon(t-1))  
         accepted_particles ++= batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList)
-        count_accepted_particles = accepted_particles.length
-        count_rejected_particles += batch.length - batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList).length
-        logg.info("t: "+t.toString()+" epsilon: "+epsilon(t-1)+" S: "+S(t-1)+" accepted_particles_length: "+accepted_particles.length.toString()+" acceptance_rate: "+(1.0*count_accepted_particles/(count_accepted_particles+count_rejected_particles)).toString())
-        if(accepted_particles.length==0)
+        count_rejected_particles += batch.count - batch.zip(is_accepted).filter(_._2).count
+        logg.info("t: "+t.toString()+" epsilon: "+epsilon(t-1)+" S: "+S(t-1)+" accepted_particles_length: "+accepted_particles_count.toString()+" acceptance_rate: "+(1.0*accepted_particles_count/(accepted_particles_count+count_rejected_particles)).toString())
+        if(accepted_particles_count==0)
           exit_criterion=true;
+        accepted_particles_count = accepted_particles.count
       }
-      accepted_particles = accepted_particles.take(U)
+      accepted_particles = accepted_particles.zipWithIndex.filter(_._2 < U).map(_._1)
       //compute weights
-      particles ++= List(for (particle <- accepted_particles) yield (particle, compute_weight(particle)))
+      particles ++= List(accepted_particles.map(particle => (particle, compute_weight(particle))))
       t += 1
     }
-    return particles
+    particles
   }
 }
