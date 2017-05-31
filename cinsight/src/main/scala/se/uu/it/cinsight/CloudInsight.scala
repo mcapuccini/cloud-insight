@@ -154,8 +154,10 @@ class CloudInsight(
 
         val batch = sc.parallelize(1 to batchSize, defaultParallelism).map { _ =>
           Vectors.dense(sample_candidate(partial_sum).toArray)
-        }  
+        }
+        batch.cache
         var is_accepted = evaluate_particle(batch, S(t-1), epsilon(t-1))
+        is_accepted.cache
         accepted_particles ++= batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList)
         count_rejected_particles += batch.count - batch.zip(is_accepted).filter(_._2).count
         accepted_particles_count = accepted_particles.count
