@@ -74,6 +74,7 @@ class CloudInsight(
    * @param particle particle whose weight must be computed
    */
   def compute_weight(particle: List[Double], particles_t2: List[(List[Double], Double)]): Double = {
+    logg.info("t weight: "+t.toString)
     var weight = if (t == 1) 1.0 else (for ((value, i) <- particle.zipWithIndex) yield if (prior(i)._1 <= value && value <= prior(i)._2)
       1.0 / (prior(i)._2 - prior(i)._1) else 0.0).product
 
@@ -168,6 +169,7 @@ class CloudInsight(
       accepted_particles = accepted_particles.zipWithIndex.filter(_._2 < U).map(_._1)
       //compute weights
       particles ++= List(accepted_particles.map(particle => (particle, compute_weight(particle, particles_t2))))
+      particles(t-1).cache
       particles_t2 = particles(t-1).collect.toList
       t += 1
 
