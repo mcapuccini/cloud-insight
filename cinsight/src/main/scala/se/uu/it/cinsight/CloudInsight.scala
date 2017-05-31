@@ -129,44 +129,46 @@ class CloudInsight(
       sc.getConf.get("spark.default.parallelism", "2").toInt
     
     var exit_criterion = false
+    var particles_t2 = List[(List[Double], Double)]()
+
     while (t <= T && !exit_criterion) {
       var count_rejected_particles = 0L     
       var accepted_particles = sc.emptyRDD[List[Double]]
       var accepted_particles_count = 0L
+
+      val partial_sum = if(t>1){
+        particles_t2.scanLeft((List[Double](), 0.0))(
+          (p1, p2) => (p2._1, p1._2 + p2._2))
+        .map({ case (p, w) => (p, w / particles_t2.map(_._2).sum) }).toList
+      }
+      else{
+        List[(List[Double], Double)]()
+      }
+
       while (accepted_particles_count < U && !exit_criterion) {
-        val batchSize = if(accepted_particles_count+count_rejected_particles !=0) {
+        val batchSize = if(accepted_particles_count+count_rejected_particles != 0) {
           ((U-accepted_particles_count)*1.15/(1.0*accepted_particles_count/(accepted_particles_count+count_rejected_particles))).toInt
         } else {
           U
         }
 
-        val partial_sum = if(t>1){
-          val particles_t2 = particles(t-2).collect
-          particles_t2.scanLeft((List[Double](), 0.0))(
-            (p1, p2) => (p2._1, p1._2 + p2._2))
-          .map({ case (p, w) => (p, w / particles(t - 2).map(_._2).sum) }).toList
-        }
-        else{
-          List[(List[Double], Double)]()
-        }
-
         val batch = sc.parallelize(1 to batchSize, defaultParallelism).map { _ =>
           Vectors.dense(sample_candidate(partial_sum).toArray)
         }  
-        var is_accepted = evaluate_particle(batch, S(t-1), epsilon(t-1))  
+        var is_accepted = evaluate_particle(batch, S(t-1), epsilon(t-1))
         accepted_particles ++= batch.zip(is_accepted).filter(_._2).map(_._1.toArray.toList)
         count_rejected_particles += batch.count - batch.zip(is_accepted).filter(_._2).count
+        accepted_particles_count = accepted_particles.count
         logg.info("t: "+t.toString()+" epsilon: "+epsilon(t-1)+" S: "+S(t-1)+" accepted_particles_length: "+accepted_particles_count.toString()+" acceptance_rate: "+(1.0*accepted_particles_count/(accepted_particles_count+count_rejected_particles)).toString())
         if(accepted_particles_count==0)
           exit_criterion=true;
-        accepted_particles_count = accepted_particles.count
       }
-      val particles_t2 = if(t>1) particles(t-2).collect.toList else List[(List[Double], Double)]()
-
       accepted_particles = accepted_particles.zipWithIndex.filter(_._2 < U).map(_._1)
       //compute weights
       particles ++= List(accepted_particles.map(particle => (particle, compute_weight(particle, particles_t2))))
+      particles_t2 = particles(t-1).collect.toList
       t += 1
+
     }
     particles
   }
