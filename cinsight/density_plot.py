@@ -30,7 +30,7 @@ for k, i in enumerate([int(s) for s in sys.argv[3:]]):
     ax[k].set_xlim(xmin, xmax)
     ax[k].set_ylim(ymin, ymax)
     ax[k].axvline(x=7.5, color='r', linewidth=3)
-    ax[k].axhline(y=0.75, color='r', linewidth=3)
+    ax[k].axhline(y=0.95, color='r', linewidth=3)
     ax[k].axvline(x=np.mean(x), color='g', linewidth=3, linestyle='--')
     ax[k].axhline(y=np.mean(y), color='g', linewidth=3, linestyle='--')
 
