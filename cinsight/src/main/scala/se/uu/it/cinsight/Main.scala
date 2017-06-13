@@ -73,7 +73,7 @@ object Main {
     val particles = engine.run()
     val particles_writer = new PrintWriter(new File("particles.json"))
     particles_writer.write(compact(render(
-        (for (batch <- particles) yield (for (particle <- batch) yield particle._1.toList).toList).toList)))
+        (for (batch <- particles) yield (for (particle <- batch.collect) yield particle._1.toList).toList).toList)))
     particles_writer.close
     
     val eps_writer = new PrintWriter(new File("epsilon.json"))
